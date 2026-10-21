@@ -4,5 +4,5 @@
   "address": "0xF90808A53E28312b15E9344BA56df1e47E79A820",
   "verifier": "0xcd645F95254F557aB0DcaFa1acD429b3Dd5Ca645",
   "deployBlock": 48417023,
-  "rpcUrl": "https://sepolia.base.org"
+  "rpcUrl": "https://base-sepolia-rpc.publicnode.com"
 }

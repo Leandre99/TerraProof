@@ -182,31 +182,44 @@ export class ChainRegistry implements Registry {
     reports: Map<string, MrvReport>;
     latestIssued: Map<number, MrvReport>;
   }> {
-    const latest = await this.reader.getBlockNumber();
     const logs: { blockNumber: number; transactionHash: string; fragmentName: string; args: Record<string, unknown> }[] = [];
-    for (let from = deployment.deployBlock; from <= latest; from += LOG_CHUNK) {
-      const to = Math.min(latest, from + LOG_CHUNK - 1);
-      const chunk = await this.reader.getLogs({ address: deployment.address, fromBlock: from, toBlock: to });
-      for (const l of chunk) {
-        try {
-          const parsed = iface.parseLog(l);
-          if (parsed) {
-            logs.push({
-              blockNumber: l.blockNumber,
-              transactionHash: l.transactionHash,
-              fragmentName: parsed.name,
-              args: parsed.args.toObject(),
-            });
+    const blockTs = new Map<number, number>();
+    try {
+      const latest = await this.reader.getBlockNumber();
+      const fetchRange = async (from: number, to: number) => {
+        const chunk = await this.reader.getLogs({ address: deployment.address, fromBlock: from, toBlock: to });
+        for (const l of chunk) {
+          try {
+            const parsed = iface.parseLog(l);
+            if (parsed) {
+              logs.push({
+                blockNumber: l.blockNumber,
+                transactionHash: l.transactionHash,
+                fragmentName: parsed.name,
+                args: parsed.args.toObject(),
+              });
+            }
+          } catch {
+            /* not one of ours */
           }
-        } catch {
-          /* not one of ours */
+        }
+      };
+      try {
+        // Most RPCs accept one wide query; some free tiers cap the range, so fall back to chunks.
+        await fetchRange(deployment.deployBlock, latest);
+      } catch {
+        logs.length = 0;
+        for (let from = deployment.deployBlock; from <= latest; from += LOG_CHUNK) {
+          await fetchRange(from, Math.min(latest, from + LOG_CHUNK - 1));
         }
       }
-    }
-    const blockTs = new Map<number, number>();
-    for (const b of new Set(logs.map((l) => l.blockNumber))) {
-      const blk = await this.reader.getBlock(b);
-      blockTs.set(b, (blk?.timestamp ?? 0) * 1000);
+      for (const b of new Set(logs.map((l) => l.blockNumber))) {
+        const blk = await this.reader.getBlock(b);
+        blockTs.set(b, (blk?.timestamp ?? 0) * 1000);
+      }
+    } catch {
+      // The activity feed is a nicety: parcels and balances are read from contract state, so never fail the whole view.
+      logs.length = 0;
     }
 
     const events: LedgerEvent[] = [];
