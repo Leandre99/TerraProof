@@ -50,7 +50,7 @@ OVERLAY_JS = r"""
       transition:all .55s ease-out;opacity:1}
     #demo-cap{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(8px);max-width:78%;text-align:center;opacity:0;
       background:#16140F;color:#EFEBDD;border:1.5px solid #16140F;border-radius:6px;box-shadow:4px 4px 0 #C8F169;padding:12px 24px;
-      font:500 22px/1.35 var(--font-sans),system-ui,sans-serif;z-index:2147482990;pointer-events:none;transition:opacity .3s ease,transform .3s ease}
+      font:500 22px/1.35 var(--font-sans),system-ui,sans-serif;z-index:2147482997;pointer-events:none;transition:opacity .3s ease,transform .3s ease}
     #demo-cap.on{opacity:1;transform:translateX(-50%) translateY(0)}
     #demo-chap{position:fixed;left:24px;bottom:104px;display:flex;gap:10px;align-items:center;background:#EFEBDD;border:1.5px solid #16140F;border-radius:4px;
       box-shadow:3px 3px 0 #16140F;padding:7px 14px;font:500 13px/1 var(--font-mono),ui-monospace,monospace;letter-spacing:.14em;text-transform:uppercase;
@@ -225,7 +225,8 @@ def main():
             return page.get_by_role(r, name=name, exact=exact)
 
         # ---------------------------------------------------------------- 0. intro card over the landing page
-        page.goto(URL + "/", wait_until="networkidle")
+        page.goto(URL + "/", wait_until="load")
+        page.wait_for_selector("h1", timeout=60000)
         page.mouse.move(900, 500)
         time.sleep(1.0)
         page.evaluate("""() => window.__demo.card(`
@@ -359,19 +360,22 @@ def main():
           <div class="dc-label">Deployed on Base Sepolia · chain 84532</div>
           <div class="dc-title" style="font-size:64px;margin:22px 0">TerraProof.sol<br><i>on-chain</i></div>
           <div class="dc-mono"><span class="k">contract </span>{CONTRACT}<br><span class="k">issued   </span>36 credits · Sentinel-2 evidence hash anchored<br><span class="k">tx       </span>{ISSUE_TX}</div>`)""")
-        at("onchain", st, 1)
-        page.evaluate("() => window.__demo.card(null)")
-        time.sleep(0.9)
+        # Prepare the on-chain view BEHIND the card, so the parcel is on screen while the voice describes it.
         click(role("link", re.compile("Back to registry")))
         page.wait_for_selector("button:has-text('On-chain')", timeout=20000)
-        time.sleep(1.0)
+        time.sleep(0.6)
         click(role("button", "On-chain", exact=True))
         page.wait_for_selector("text=Parcels · 1", timeout=40000)
-        time.sleep(0.6)
         click(role("tab", re.compile("Parcels")))
         click(role("button", re.compile("Savalou demo parcel")))
-        time.sleep(1.0)
-        ring(page.get_by_text(re.compile("Evidence hash")).first, 3500)
+        page.wait_for_selector("text=Sentinel-2 live", timeout=20000)
+        time.sleep(0.5)
+        at("onchain", st, 1)
+        page.evaluate("() => window.__demo.card(null)")
+        time.sleep(1.4)
+        ring(page.get_by_text(re.compile("Evidence hash")).first, 3600)
+        time.sleep(1.2)
+        ring(page.locator("svg[aria-label='NDVI timeline']"), 3000)
         at("onchain", st, 2)
         page.evaluate("""() => window.__demo.card(`
           <div class="dc-label">Smart contract tests</div>
@@ -431,11 +435,13 @@ def make_pad(n, sr=SR):
 
 
 def build(video, scene_t0, total):
-    n = int((total - TRIM + 1.0) * SR)
+    # Cut the page-load time before the title card appears (the card is the first thing viewers should see).
+    trim = max(TRIM, scene_t0["intro"] - 0.5)
+    n = int((total - trim + 1.0) * SR)
     voice = np.zeros(n, dtype=np.float32)
     for sec, t in scene_t0.items():
         clip = read_wav(ROOT / "voice" / f"{sec}.wav")
-        a = int(max(0.0, t - TRIM) * SR)
+        a = int(max(0.0, t - trim) * SR)
         voice[a:a + len(clip)] += clip[: max(0, n - a)]
     pad = make_pad(n)
     fade = np.ones(n, dtype=np.float32)
@@ -451,7 +457,7 @@ def build(video, scene_t0, total):
 
     ff = imageio_ffmpeg.get_ffmpeg_exe()
     final = OUT / "terraproof-demo.mp4"
-    cmd = [ff, "-y", "-ss", str(TRIM), "-i", str(video), "-i", str(wav_path),
+    cmd = [ff, "-y", "-ss", f"{trim:.2f}", "-i", str(video), "-i", str(wav_path),
            "-map", "0:v:0", "-map", "1:a:0", "-r", "30", "-c:v", "libx264", "-preset", "medium", "-crf", "19",
            "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "160k", "-shortest", "-movflags", "+faststart", str(final)]
     subprocess.run(cmd, check=True, capture_output=True)
