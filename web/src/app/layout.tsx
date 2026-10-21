@@ -1,12 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
+import { DM_Mono, Hanken_Grotesk, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import { RegistryProvider } from "@/lib/registry/context";
 import { Toasts } from "@/components/ui";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
-const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces", display: "swap", axes: ["opsz"] });
-const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap" });
+const sans = Hanken_Grotesk({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
+const display = Instrument_Serif({ subsets: ["latin"], weight: "400", style: ["normal", "italic"], variable: "--font-display", display: "swap" });
+const mono = DM_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-mono", display: "swap" });
 
 export const metadata: Metadata = {
   title: "TerraProof — Carbon credits you can verify from space",
@@ -20,15 +20,15 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#060C0A",
+  themeColor: "#EFEBDD",
   width: "device-width",
   initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${fraunces.variable} ${mono.variable}`}>
-      <body className="min-h-screen font-sans">
+    <html lang="en" className={`${sans.variable} ${display.variable} ${mono.variable}`}>
+      <body className="paper min-h-screen font-sans">
         <RegistryProvider>
           {children}
           <Toasts />

@@ -17,12 +17,12 @@ const META: Record<LedgerEventType, { icon: React.ElementType; color: string }> 
 export function Ledger({ events, limit = 30, explorer }: { events: LedgerEvent[]; limit?: number; explorer?: string }) {
   if (events.length === 0) return <p className="py-6 text-center text-sm text-mute">No activity yet.</p>;
   return (
-    <ol className="relative space-y-0.5 before:absolute before:bottom-3 before:left-[15px] before:top-3 before:w-px before:bg-line/70">
+    <ol className="relative space-y-0.5 before:absolute before:bottom-3 before:left-[15px] before:top-3 before:w-px before:bg-ink/20">
       {events.slice(0, limit).map((e) => {
         const { icon: Icon, color } = META[e.type];
         return (
           <li key={e.id} className="relative flex gap-3 rounded-lg px-1 py-2">
-            <span className={`relative z-10 mt-0.5 flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full border border-line bg-surface ${color}`}>
+            <span className={`relative z-10 mt-0.5 flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full border-[1.5px] border-ink/40 bg-raised ${color}`}>
               <Icon className="h-3.5 w-3.5" />
             </span>
             <div className="min-w-0 flex-1">

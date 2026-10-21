@@ -96,22 +96,22 @@ export default function AppPage() {
 
   return (
     <div className="flex h-screen flex-col bg-bg">
-      <header className="z-[1100] flex h-14 shrink-0 items-center justify-between gap-3 border-b border-line/70 bg-surface/80 px-4 backdrop-blur">
+      <header className="z-[1100] flex h-14 shrink-0 items-center justify-between gap-3 border-b-[1.5px] border-ink bg-raised px-4">
         <div className="flex items-center gap-4">
           <Logo size={26} />
-          <span className="hidden h-5 w-px bg-line sm:block" />
-          <span className="hidden text-sm text-mute sm:block">Registry</span>
+          <span className="hidden h-5 w-px bg-ink/30 sm:block" />
+          <span className="label hidden sm:block">Registry</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex rounded-lg border border-line bg-bg/60 p-0.5 text-xs font-semibold" role="group" aria-label="Mode">
-            <button onClick={() => setMode("sim")} className={`whitespace-nowrap rounded-md px-2.5 py-1.5 transition sm:px-3 ${mode === "sim" ? "bg-brand text-bg" : "text-mute hover:text-ink"}`}>
+          <div className="flex rounded-[6px] border-[1.5px] border-ink bg-surface p-0.5 text-xs font-semibold" role="group" aria-label="Mode">
+            <button onClick={() => setMode("sim")} className={`whitespace-nowrap rounded-[4px] px-2.5 py-1.5 transition sm:px-3 ${mode === "sim" ? "bg-ink text-bg" : "text-mute hover:text-ink"}`}>
               Simulation
             </button>
             <button
               onClick={() => chainAvailable && setMode("chain")}
               disabled={!chainAvailable}
               title={chainAvailable ? "Use the deployed smart contract" : "Contract not deployed in this build"}
-              className={`whitespace-nowrap rounded-md px-2.5 py-1.5 transition sm:px-3 ${mode === "chain" ? "bg-brand text-bg" : "text-mute hover:text-ink"} disabled:cursor-not-allowed disabled:opacity-50`}
+              className={`whitespace-nowrap rounded-[4px] px-2.5 py-1.5 transition sm:px-3 ${mode === "chain" ? "bg-ink text-bg" : "text-mute hover:text-ink"} disabled:cursor-not-allowed disabled:opacity-50`}
             >
               On-chain
             </button>
@@ -154,27 +154,25 @@ export default function AppPage() {
           />
 
           {/* legend */}
-          <div className="pointer-events-none absolute bottom-6 left-3 z-[1000] hidden gap-3 rounded-lg border border-line/70 bg-bg/80 px-3 py-2 text-[11px] text-mute backdrop-blur sm:flex">
-            <span className="flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-sm bg-brand" /> Yours</span>
-            <span className="flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-sm bg-sky" /> Others</span>
-            <span className="flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-sm bg-amber" /> Frozen</span>
+          <div className="pointer-events-none absolute bottom-6 left-3 z-[1000] hidden gap-3 rounded-[4px] border-[1.5px] border-ink bg-raised px-3 py-2 sm:flex">
+            <span className="label flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-[2px] border border-ink bg-lime" /> Yours</span>
+            <span className="label flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-[2px] border border-ink" style={{ background: "#7FC8FF" }} /> Others</span>
+            <span className="label flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-[2px] border border-ink" style={{ background: "#FFB020" }} /> Frozen</span>
           </div>
 
           {drawing && (
-            <div className="pointer-events-none absolute left-1/2 top-4 z-[1000] -translate-x-1/2 animate-rise rounded-full border border-brand/40 bg-bg/90 px-4 py-2 text-sm font-medium text-brand backdrop-blur">
+            <div className="pointer-events-none absolute left-1/2 top-4 z-[1000] -translate-x-1/2 animate-rise whitespace-nowrap rounded-[4px] border-[1.5px] border-ink bg-lime px-4 py-2 text-sm font-semibold text-ink shadow-hard-sm">
               <MousePointer2 className="mr-1.5 inline h-4 w-4" /> Click the map to place corners
             </div>
           )}
 
           {banner && (
-            <div className="pointer-events-none absolute inset-x-3 top-4 z-[1200] mx-auto max-w-md animate-shake rounded-2xl border border-danger/60 bg-bg/95 p-4 shadow-2xl backdrop-blur">
-              <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-danger/15 text-danger">
-                  <ShieldX className="h-5 w-5" />
-                </span>
+            <div className="card-hard pointer-events-none absolute inset-x-3 top-4 z-[1200] mx-auto max-w-md animate-shake !border-danger p-4 !shadow-[5px_5px_0_rgb(var(--danger))]">
+              <div className="flex items-start gap-3">
+                <span className="stamp stamp-danger mt-1">Rejected</span>
                 <div>
-                  <p className="font-display text-lg font-semibold text-danger">Double counting blocked</p>
-                  <p className="text-[13px] leading-snug text-mute">
+                  <p className="font-display text-[26px] leading-none text-danger">Double counting blocked</p>
+                  <p className="mt-1.5 text-[13px] leading-snug text-ink/75">
                     {banner.text}. The registry refused the transaction: a cell can never be claimed twice.
                   </p>
                 </div>
@@ -183,15 +181,15 @@ export default function AppPage() {
           )}
 
           {!ready && (
-            <div className="absolute inset-0 z-[1300] flex items-center justify-center bg-bg/70 text-sm text-mute backdrop-blur-sm">
+            <div className="absolute inset-0 z-[1300] flex items-center justify-center bg-bg/80 text-sm text-mute">
               <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Connecting to the registry…
             </div>
           )}
         </div>
 
         {/* PANEL */}
-        <aside className="order-2 flex min-h-0 flex-1 flex-col border-line/70 bg-surface/60 lg:order-1 lg:w-[420px] lg:flex-none lg:border-r">
-          <nav className="grid shrink-0 grid-cols-3 gap-1 border-b border-line/70 p-2" role="tablist">
+        <aside className="order-2 flex min-h-0 flex-1 flex-col border-ink bg-bg lg:order-1 lg:w-[430px] lg:flex-none lg:border-r-[1.5px]">
+          <nav className="grid shrink-0 grid-cols-3 gap-1.5 border-b-[1.5px] border-ink bg-raised p-2" role="tablist">
             {(
               [
                 ["register", "Register", PenLine],
@@ -204,8 +202,8 @@ export default function AppPage() {
                 role="tab"
                 aria-selected={tab === id}
                 onClick={() => setTab(id)}
-                className={`flex items-center justify-center gap-2 rounded-lg py-2 text-[13px] font-semibold transition ${
-                  tab === id ? "bg-raised text-ink shadow-inner" : "text-mute hover:text-ink"
+                className={`flex items-center justify-center gap-2 rounded-[4px] border-[1.5px] py-2 text-[13px] font-semibold transition ${
+                  tab === id ? "border-ink bg-ink text-bg" : "border-transparent text-mute hover:border-ink/30 hover:text-ink"
                 }`}
               >
                 <Icon className="h-4 w-4" /> {label}
@@ -219,7 +217,7 @@ export default function AppPage() {
             {tab === "register" && (
               <div className="card animate-rise space-y-4 p-4">
                 <div>
-                  <p className="text-[15px] font-semibold tracking-tight">Register a parcel</p>
+                  <p className="font-display text-[28px] leading-none">Register a parcel</p>
                   <p className="mt-0.5 text-[13px] leading-snug text-mute">
                     Outline your land. It is split into ~38 × 19 m cells; the contract refuses any cell that is already taken.
                   </p>
@@ -240,15 +238,15 @@ export default function AppPage() {
                 </div>
 
                 <dl className="grid grid-cols-3 gap-2 text-center">
-                  <div className="rounded-lg border border-line/60 bg-bg/50 py-2">
+                  <div className="rounded-[6px] border border-ink/20 bg-surface py-2">
                     <dd className="font-display text-lg font-semibold">{draft.length}</dd>
                     <dt className="text-[10px] uppercase tracking-wider text-mute">Corners</dt>
                   </div>
-                  <div className="rounded-lg border border-line/60 bg-bg/50 py-2">
+                  <div className="rounded-[6px] border border-ink/20 bg-surface py-2">
                     <dd className={`font-display text-lg font-semibold ${tooBig ? "text-danger" : ""}`}>{cells.length}</dd>
                     <dt className="text-[10px] uppercase tracking-wider text-mute">Cells / {MAX_CELLS_PER_PARCEL}</dt>
                   </div>
-                  <div className="rounded-lg border border-line/60 bg-bg/50 py-2">
+                  <div className="rounded-[6px] border border-ink/20 bg-surface py-2">
                     <dd className="font-display text-lg font-semibold">{areaHa.toFixed(1)}</dd>
                     <dt className="text-[10px] uppercase tracking-wider text-mute">Hectares</dt>
                   </div>
@@ -266,8 +264,8 @@ export default function AppPage() {
                 </button>
 
                 <div className="relative">
-                  <div className="absolute inset-x-0 top-1/2 h-px bg-line/70" />
-                  <p className="relative mx-auto w-fit bg-[rgb(14_25_21)] px-3 text-[11px] uppercase tracking-widest text-mute">or test the guard rail</p>
+                  <div className="absolute inset-x-0 top-1/2 h-px bg-ink/20" />
+                  <p className="relative mx-auto w-fit bg-surface px-3 text-[11px] uppercase tracking-widest text-mute">or test the guard rail</p>
                 </div>
                 <button className="btn btn-danger w-full" disabled={registering || parcels.length === 0} onClick={tryDoubleCount}>
                   <ShieldX className="h-4 w-4" /> Claim land that's already registered
@@ -316,7 +314,7 @@ export default function AppPage() {
 
             {tab === "ledger" && (
               <div className="card animate-rise p-4">
-                <p className="mb-3 text-[15px] font-semibold tracking-tight">Public ledger</p>
+                <p className="mb-3 font-display text-[28px] leading-none">Public ledger</p>
                 <Ledger events={events} />
               </div>
             )}

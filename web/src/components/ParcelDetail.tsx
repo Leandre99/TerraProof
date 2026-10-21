@@ -101,8 +101,8 @@ export function ParcelDetail({ parcel }: { parcel: Parcel }) {
     <div className="card animate-rise p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="font-mono text-[11px] text-mute">PARCEL #{parcel.id}</p>
-          <h3 className="mt-0.5 truncate text-[17px] font-semibold tracking-tight">{parcel.name}</h3>
+          <p className="label">PARCEL #{parcel.id}</p>
+          <h3 className="mt-0.5 truncate font-display text-[28px] leading-tight">{parcel.name}</h3>
           <p className="mt-0.5 text-xs text-mute">
             {mine ? "You" : shortAddr(parcel.owner)} · {parcel.areaHa.toFixed(1)} ha · {parcel.cells.length} cells
           </p>
@@ -117,7 +117,7 @@ export function ParcelDetail({ parcel }: { parcel: Parcel }) {
           ["Retired", parcel.retired, ""],
           ["Revoked", parcel.revoked, parcel.revoked ? "text-danger" : ""],
         ].map(([k, v, c]) => (
-          <div key={k as string} className="rounded-lg border border-line/60 bg-bg/50 py-2">
+          <div key={k as string} className="rounded-[6px] border border-ink/20 bg-surface py-2">
             <p className={`font-display text-lg font-semibold ${c}`}>{v}</p>
             <p className="text-[10px] uppercase tracking-wider text-mute">{k}</p>
           </div>
@@ -171,7 +171,7 @@ export function ParcelDetail({ parcel }: { parcel: Parcel }) {
       )}
 
       {!mine ? (
-        <p className="mt-4 rounded-lg border border-line/60 bg-bg/40 p-3 text-xs text-mute">
+        <p className="mt-4 rounded-[6px] border border-ink/20 bg-surface p-3 text-xs text-mute">
           This parcel belongs to another owner. You can inspect it, but only its owner can act on it.
         </p>
       ) : (
@@ -217,7 +217,7 @@ export function ParcelDetail({ parcel }: { parcel: Parcel }) {
           )}
 
           {retiring && !frozen && (
-            <div className="animate-rise space-y-2 rounded-xl border border-line bg-bg/50 p-3">
+            <div className="animate-rise space-y-2 rounded-[6px] border-[1.5px] border-ink/40 bg-surface p-3">
               <p className="text-xs font-semibold text-mute">Retire credits permanently</p>
               <div className="grid grid-cols-[90px_1fr] gap-2">
                 <input className="input" inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value)} aria-label="Amount" />
@@ -237,7 +237,7 @@ export function ParcelDetail({ parcel }: { parcel: Parcel }) {
         </div>
       )}
 
-      <Link href={`/verify/${parcel.id}`} className="mt-4 flex items-center justify-between rounded-lg border border-line/60 px-3 py-2.5 text-sm font-medium text-mute transition hover:border-brand/40 hover:text-ink">
+      <Link href={`/verify/${parcel.id}`} className="mt-4 flex items-center justify-between rounded-[6px] border border-ink/20 px-3 py-2.5 text-sm font-medium text-mute transition hover:border-ink hover:text-ink">
         Public proof page <ArrowUpRight className="h-4 w-4" />
       </Link>
     </div>

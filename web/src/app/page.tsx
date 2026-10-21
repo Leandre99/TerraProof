@@ -1,230 +1,256 @@
 import Link from "next/link";
-import { ArrowRight, Boxes, Eye, Globe2, Layers, Satellite, ShieldCheck, Sprout, Timer, Fingerprint, Network, Coins, FlaskConical } from "lucide-react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { Logo } from "@/components/ui";
-import { HeroVisual } from "@/components/HeroVisual";
+import { ClaimBoard } from "@/components/ClaimBoard";
+import { CreditCertificate } from "@/components/CreditCertificate";
+
+const ticker = [
+  "SENTINEL-2 · 10 M RESOLUTION",
+  "5-DAY REVISIT",
+  "GEOHASH/8 CELLS · 38 × 19 M",
+  "1 CELL, 1 OWNER",
+  "ERC-1155 CREDITS",
+  "EVIDENCE HASH ON-CHAIN",
+  "FREEZE · REVOKE · RETIRE",
+  "OPEN, PUBLIC PROOFS",
+];
 
 const problems = [
   {
-    icon: Layers,
-    title: "The same forest, sold twice",
-    body: "Registries don't talk to each other. One hectare can back credits in several programmes at once and nobody can prove it.",
+    n: "01",
+    title: "The same forest, sold twice.",
+    body: "Registries don't talk to each other. One hectare can back credits in several programmes at once, and nobody can prove it.",
   },
   {
-    icon: Eye,
-    title: "Claims no one can check",
+    n: "02",
+    title: "Claims no one can check.",
     body: "Verification is a consultant visiting once every few years. Buyers pay for carbon they can't see.",
   },
   {
-    icon: Timer,
-    title: "Credits that outlive the trees",
+    n: "03",
+    title: "Credits that outlive the trees.",
     body: "A forest cleared after issuance keeps its credits. The market has no way to take them back.",
   },
 ];
 
 const steps = [
-  {
-    n: "01",
-    icon: Fingerprint,
-    title: "Claim land, once",
-    body: "A farmer draws a parcel. It is cut into ~38 × 19 m geohash cells and written to the ledger. A cell can only ever belong to one parcel.",
-  },
-  {
-    n: "02",
-    icon: Satellite,
-    title: "The satellite audits it",
-    body: "The MRV oracle reads Sentinel-2 imagery over the polygon, computes NDVI and proposes the credits the vegetation supports.",
-  },
-  {
-    n: "03",
-    icon: Coins,
-    title: "Credits are minted with evidence",
-    body: "The smart contract issues ERC-1155 credits and anchors the hash of the satellite report next to them. Anyone can re-check it.",
-  },
-  {
-    n: "04",
-    icon: ShieldCheck,
-    title: "Credits stay alive",
-    body: "Monitoring never stops. If the canopy disappears, credits freeze, then are revoked. Buyers retire what's left with a public proof page.",
-  },
+  ["Claim", "Draw a parcel. It is cut into ~38 × 19 m cells and written to the ledger. A cell has one owner, ever."],
+  ["Audit", "An oracle reads Sentinel-2 over the polygon, computes NDVI and proposes the credits the vegetation supports."],
+  ["Mint", "The contract issues credits and anchors the hash of the satellite report beside them."],
+  ["Watch", "Monitoring never stops. If the canopy collapses, the parcel freezes, then credits are revoked."],
+  ["Retire", "Buyers retire credits on-chain. A public proof page, with QR code, remains forever."],
 ];
 
 const roadmap = [
-  { icon: Network, title: "Registry of registries", body: "Cross-check Verra, Gold Standard and national registries to detect double counting beyond a single ledger." },
-  { icon: Sprout, title: "Smallholders first", body: "Verification that costs cents, not tens of thousands. Starting in Benin and West Africa, where agroforestry is booming and certification is out of reach." },
-  { icon: Globe2, title: "Article 6 ready", body: "Transparent, auditable units for country-to-country carbon trading, the heart of the COP31 agenda." },
-  { icon: Boxes, title: "Open MRV methodologies", body: "Pluggable, peer-reviewed methods (allometry, SAR, ground-truth) so science, not marketing, sets the price." },
+  ["Registry of registries", "Cross-check Verra, Gold Standard and national registries to catch double counting beyond a single ledger."],
+  ["Smallholders first", "Verification that costs cents, not tens of thousands. Starting in Benin and West Africa, where agroforestry is booming and certification is out of reach."],
+  ["Article 6 ready", "Transparent, auditable units for country-to-country carbon trading, the heart of the COP31 agenda."],
+  ["Open MRV methods", "Pluggable, peer-reviewed methods (SAR, allometry, ground truth) so science, not marketing, sets the price."],
 ];
 
 export default function Landing() {
   return (
-    <div className="bg-aurora relative min-h-screen overflow-x-hidden">
-      <div className="bg-grid pointer-events-none absolute inset-x-0 top-0 h-[720px]" aria-hidden />
-
-      <header className="relative z-10 mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
+    <div className="relative overflow-x-hidden">
+      {/* HEADER */}
+      <header className="relative z-20 mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
         <Logo />
-        <nav className="hidden items-center gap-7 text-sm text-mute md:flex">
-          <a href="#problem" className="hover:text-ink">Problem</a>
-          <a href="#how" className="hover:text-ink">How it works</a>
-          <a href="#vision" className="hover:text-ink">Vision</a>
-          <a href="#honesty" className="hover:text-ink">Limits</a>
+        <nav className="hidden items-center gap-8 text-sm md:flex">
+          {[
+            ["#problem", "Problem"],
+            ["#how", "How it works"],
+            ["#vision", "Vision"],
+            ["#field-notes", "Field notes"],
+          ].map(([href, label]) => (
+            <a key={href} href={href} className="label !text-ink hover:underline hover:decoration-lime hover:decoration-[3px] hover:underline-offset-4">
+              {label}
+            </a>
+          ))}
         </nav>
         <Link href="/app" className="btn btn-primary btn-sm">
-          Launch demo <ArrowRight className="h-4 w-4" />
+          Open the registry <ArrowRight className="h-4 w-4" />
         </Link>
       </header>
 
       {/* HERO */}
-      <section className="relative z-10 mx-auto grid max-w-6xl items-center gap-14 px-5 pb-24 pt-10 lg:grid-cols-[1.05fr_1fr] lg:pt-16">
-        <div className="animate-rise">
-          <span className="pill pill-brand mb-6">
-            <span className="h-1.5 w-1.5 rounded-full bg-brand" /> IEEE ClimateChain · Carbon Markets &amp; Emissions Transparency
-          </span>
-          <h1 className="font-display text-[44px] font-semibold leading-[1.02] tracking-tight sm:text-6xl lg:text-[68px]">
-            Carbon credits you can <span className="text-gradient">verify from space.</span>
-          </h1>
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-mute">
-            TerraProof is a carbon registry where double counting is impossible by construction, every credit is backed by satellite
-            evidence, and a credit dies when the forest does.
-          </p>
-          <div className="mt-9 flex flex-wrap items-center gap-3">
-            <Link href="/app" className="btn btn-primary h-12 px-6 text-[15px]">
-              Try the live demo <ArrowRight className="h-4 w-4" />
-            </Link>
-            <a href="#how" className="btn btn-ghost h-12 px-6 text-[15px]">
-              See how it works
-            </a>
+      <section className="relative mx-auto max-w-7xl px-5 pb-10 pt-6 sm:px-8 lg:pt-12">
+        <div className="bg-topo pointer-events-none absolute inset-x-0 -top-24 h-[640px] opacity-[0.09]" aria-hidden />
+        <div className="relative grid items-end gap-8 lg:grid-cols-[1fr_300px]">
+          <div className="animate-rise">
+            <p className="label mb-6 flex flex-wrap items-center gap-x-3 gap-y-1">
+              <span className="stamp stamp-brand">Track</span> Carbon Markets &amp; Emissions Transparency · IEEE ClimateChain 2026
+            </p>
+            <h1 className="font-display text-[56px] leading-[0.95] tracking-[-0.02em] sm:text-[88px] lg:text-[112px]">
+              Carbon credits
+              <br />
+              you can{" "}
+              <span className="relative inline-block italic">
+                <span className="text-marker">verify</span>
+              </span>
+              <br />
+              from space.
+            </h1>
           </div>
-          <dl className="mt-12 grid max-w-lg grid-cols-3 gap-6 border-t border-line/60 pt-6">
-            {[
-              ["10 m", "Sentinel-2 resolution"],
-              ["5 days", "satellite revisit"],
-              ["1 cell, 1 owner", "enforced by contract"],
-            ].map(([v, k]) => (
-              <div key={k}>
-                <dt className="font-display text-xl font-semibold sm:text-2xl">{v}</dt>
-                <dd className="mt-1 text-xs text-mute">{k}</dd>
-              </div>
-            ))}
-          </dl>
+          <div className="animate-rise pb-3 [animation-delay:150ms]">
+            <p className="text-[17px] leading-relaxed text-ink/80">
+              TerraProof is a carbon registry where double counting is impossible by construction, every credit is backed by satellite evidence,
+              and a credit dies when the forest does.
+            </p>
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <Link href="/app" className="btn btn-primary h-12 px-6 text-[15px]">
+                Try the live demo <ArrowRight className="h-4 w-4" />
+              </Link>
+              <a href="#how" className="btn btn-ghost h-12 px-5 text-[15px]">
+                How it works
+              </a>
+            </div>
+          </div>
         </div>
-        <div className="animate-rise [animation-delay:150ms]">
-          <HeroVisual />
-          <p className="mt-3 text-center text-[11px] text-mute/80">Illustration. Open the demo to run it on real imagery.</p>
+
+        <div className="animate-rise mt-12 [animation-delay:250ms]">
+          <ClaimBoard />
+          <p className="label mt-3 text-center">↑ Not a screenshot. Claim some cells, then try to claim someone else&apos;s.</p>
         </div>
       </section>
 
+      {/* TICKER */}
+      <div className="relative z-10 mt-6 overflow-hidden border-y-[1.5px] border-ink bg-ink py-3 text-bg" aria-hidden>
+        <div className="flex w-max animate-marquee whitespace-nowrap">
+          {[...ticker, ...ticker].map((t, i) => (
+            <span key={i} className="mx-6 font-mono text-[12px] tracking-[0.16em]">
+              {t} <span className="ml-6 text-lime">✦</span>
+            </span>
+          ))}
+        </div>
+      </div>
+
       {/* PROBLEM */}
-      <section id="problem" className="relative z-10 mx-auto max-w-6xl scroll-mt-16 px-5 py-20">
+      <section id="problem" className="mx-auto max-w-7xl scroll-mt-8 px-5 py-24 sm:px-8">
         <p className="eyebrow">The problem</p>
-        <h2 className="mt-3 max-w-2xl font-display text-4xl font-semibold leading-tight tracking-tight">
-          Carbon markets run on trust. Trust is what they're missing.
+        <h2 className="mt-4 max-w-3xl font-display text-5xl leading-[1.02] tracking-[-0.015em] sm:text-7xl">
+          Carbon markets run on trust. Trust is what they&apos;re <span className="italic">missing.</span>
         </h2>
-        <div className="mt-12 grid gap-4 md:grid-cols-3">
-          {problems.map(({ icon: Icon, title, body }) => (
-            <div key={title} className="card p-6">
-              <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-bg/60">
-                <Icon className="h-5 w-5 text-brand" />
-              </div>
-              <h3 className="text-lg font-semibold tracking-tight">{title}</h3>
-              <p className="mt-2 text-[15px] leading-relaxed text-mute">{body}</p>
-            </div>
+        <div className="mt-16 grid border-y-[1.5px] border-ink md:grid-cols-3 md:divide-x-[1.5px] md:divide-ink">
+          {problems.map((p) => (
+            <article key={p.n} className="px-0 py-8 md:px-8 md:first:pl-0 md:last:pr-0">
+              <p className="font-display text-[72px] leading-none text-brand">{p.n}</p>
+              <h3 className="mt-5 font-display text-3xl leading-tight">{p.title}</h3>
+              <p className="mt-3 leading-relaxed text-ink/75">{p.body}</p>
+            </article>
           ))}
         </div>
       </section>
 
       {/* HOW */}
-      <section id="how" className="relative z-10 mx-auto max-w-6xl scroll-mt-16 px-5 py-20">
-        <p className="eyebrow">How it works</p>
-        <h2 className="mt-3 max-w-2xl font-display text-4xl font-semibold leading-tight tracking-tight">
-          From a drawn polygon to a retired credit, with proof at every step.
-        </h2>
-        <ol className="mt-12 grid gap-4 md:grid-cols-2">
-          {steps.map(({ n, icon: Icon, title, body }) => (
-            <li key={n} className="card relative overflow-hidden p-6">
-              <span className="absolute right-5 top-4 font-display text-6xl font-semibold text-white/[0.04]">{n}</span>
-              <Icon className="h-6 w-6 text-brand" />
-              <h3 className="mt-4 text-lg font-semibold tracking-tight">{title}</h3>
-              <p className="mt-2 text-[15px] leading-relaxed text-mute">{body}</p>
-            </li>
-          ))}
-        </ol>
+      <section id="how" className="relative scroll-mt-8 border-y-[1.5px] border-ink bg-raised/60 py-24">
+        <div className="bg-topo-soft absolute inset-0" aria-hidden />
+        <div className="relative mx-auto max-w-7xl px-5 sm:px-8">
+          <p className="eyebrow">How it works</p>
+          <h2 className="mt-4 max-w-3xl font-display text-5xl leading-[1.02] tracking-[-0.015em] sm:text-7xl">
+            From a drawn polygon to a retired credit, <span className="italic">with proof at every step.</span>
+          </h2>
 
-        <div className="card mt-6 grid items-center gap-8 p-8 md:grid-cols-[1.1fr_1fr]">
-          <div>
-            <p className="eyebrow">Living credits</p>
-            <h3 className="mt-3 font-display text-3xl font-semibold leading-tight">
-              A carbon credit that can be switched off.
-            </h3>
-            <p className="mt-4 leading-relaxed text-mute">
-              Today a credit is a PDF. In TerraProof it is a token whose parcel is monitored continuously. When the oracle detects a
-              sharp drop in vegetation, the parcel is <span className="font-semibold text-amber">frozen</span>: transfers and
-              retirement stop instantly. If the loss is confirmed, credits are <span className="font-semibold text-danger">revoked</span>.
-              False alarm? The flag is lifted.
-            </p>
-          </div>
-          <div className="flex items-center justify-between gap-2 text-center text-xs font-semibold">
-            {[
-              ["Active", "pill-brand"],
-              ["Frozen", "pill-amber"],
-              ["Revoked", "pill-danger"],
-            ].map(([label, cls], i, a) => (
-              <div key={label} className="flex flex-1 items-center gap-2">
-                <span className={`pill ${cls} flex-1 justify-center`}>{label}</span>
-                {i < a.length - 1 && <ArrowRight className="h-4 w-4 shrink-0 text-mute" />}
-              </div>
+          <ol className="mt-16 grid gap-0 md:grid-cols-5">
+            {steps.map(([title, body], i) => (
+              <li key={title} className="relative border-t-[1.5px] border-ink pb-8 pr-6 pt-6 md:border-t-0 md:pt-0">
+                <div className="hidden items-center md:flex">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full border-[1.5px] border-ink bg-lime font-mono text-sm font-medium">{i + 1}</span>
+                  {i < steps.length - 1 && <span className="h-[1.5px] flex-1 bg-ink" />}
+                </div>
+                <p className="label mb-1 md:hidden">Step {i + 1}</p>
+                <h3 className="font-display text-4xl leading-none md:mt-5">{title}</h3>
+                <p className="mt-3 text-[15px] leading-relaxed text-ink/75">{body}</p>
+              </li>
             ))}
+          </ol>
+
+          {/* LIVING CREDITS */}
+          <div className="mt-24 grid items-center gap-12 lg:grid-cols-[0.8fr_1.2fr]">
+            <div>
+              <p className="eyebrow">Living credits</p>
+              <h3 className="mt-4 font-display text-5xl leading-[1.02] tracking-[-0.015em] sm:text-6xl">
+                A carbon credit that can be <span className="italic">switched off.</span>
+              </h3>
+              <p className="mt-6 text-[17px] leading-relaxed text-ink/80">
+                Today a credit is a PDF. Here it is a token whose parcel is monitored continuously. When the oracle sees vegetation collapse, the
+                parcel is <b>frozen</b>: transfers and retirement stop instantly. If the loss is confirmed, credits are <b>revoked</b>. False alarm? The
+                flag is lifted.
+              </p>
+            </div>
+            <div className="grid gap-6 sm:grid-cols-3">
+              <CreditCertificate state="active" serial="TP-0003" parcel="Cajou Adjigo" tonnes={88} rotate={-1.5} />
+              <CreditCertificate state="frozen" serial="TP-0003" parcel="Cajou Adjigo" tonnes={88} rotate={1} />
+              <CreditCertificate state="revoked" serial="TP-0003" parcel="Cajou Adjigo" tonnes={88} rotate={-0.5} />
+            </div>
           </div>
         </div>
       </section>
 
       {/* VISION */}
-      <section id="vision" className="relative z-10 mx-auto max-w-6xl scroll-mt-16 px-5 py-20">
+      <section id="vision" className="mx-auto max-w-7xl scroll-mt-8 px-5 py-24 sm:px-8">
         <p className="eyebrow">Where this goes</p>
-        <h2 className="mt-3 max-w-3xl font-display text-4xl font-semibold leading-tight tracking-tight">
-          One open ledger of the world's carbon claims.
+        <h2 className="mt-4 max-w-4xl font-display text-5xl leading-[1.02] tracking-[-0.015em] sm:text-7xl">
+          One open ledger of the world&apos;s <span className="italic">carbon claims.</span>
         </h2>
-        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {roadmap.map(({ icon: Icon, title, body }) => (
-            <div key={title} className="card p-5">
-              <Icon className="h-5 w-5 text-sky" />
-              <h3 className="mt-4 font-semibold tracking-tight">{title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-mute">{body}</p>
-            </div>
+        <ul className="mt-14 grid border-t-[1.5px] border-ink md:grid-cols-2">
+          {roadmap.map(([title, body], i) => (
+            <li key={title} className="group flex gap-6 border-b-[1.5px] border-ink py-8 md:pr-10 md:[&:nth-child(odd)]:border-r-[1.5px] md:[&:nth-child(even)]:pl-10">
+              <span className="label pt-2">0{i + 1}</span>
+              <div>
+                <h3 className="font-display text-3xl leading-tight">
+                  {title} <ArrowUpRight className="inline h-5 w-5 -translate-y-1 text-brand transition group-hover:translate-x-1 group-hover:-translate-y-2" />
+                </h3>
+                <p className="mt-2 leading-relaxed text-ink/75">{body}</p>
+              </div>
+            </li>
           ))}
+        </ul>
+      </section>
+
+      {/* FIELD NOTES (honesty) */}
+      <section id="field-notes" className="mx-auto max-w-7xl scroll-mt-8 px-5 pb-24 sm:px-8">
+        <div className="border-[1.5px] border-dashed border-ink/60 bg-raised/50 p-8 sm:p-12">
+          <p className="eyebrow !text-amber">Field notes</p>
+          <h2 className="mt-3 font-display text-4xl leading-tight sm:text-5xl">What is real, and what is a proof of concept.</h2>
+          <dl className="mt-10 grid gap-x-12 gap-y-8 md:grid-cols-2">
+            {[
+              ["stamp-brand", "Real", "Sentinel-2 imagery and NDVI computed live from Microsoft Planetary Computer."],
+              ["stamp-brand", "Real", "Double-counting protection, freezing, revocation and retirement, enforced by a Solidity contract with a full test suite."],
+              ["stamp-amber", "Proxy", "Credits come from a vegetation-vigour formula, not a validated carbon methodology. A production registry needs accredited science."],
+              ["stamp-danger", "Demo only", "“Simulate deforestation” injects a synthetic loss so you can watch the whole lifecycle on demand."],
+            ].map(([cls, tag, text]) => (
+              <div key={text} className="flex items-start gap-4">
+                <dt className="pt-0.5">
+                  <span className={`stamp ${cls}`}>{tag}</span>
+                </dt>
+                <dd className="leading-relaxed text-ink/80">{text}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </section>
 
-      {/* HONESTY */}
-      <section id="honesty" className="relative z-10 mx-auto max-w-6xl scroll-mt-16 px-5 py-20">
-        <div className="card flex flex-col gap-6 border-amber/30 p-8 md:flex-row md:items-start">
-          <FlaskConical className="h-8 w-8 shrink-0 text-amber" />
-          <div>
-            <h2 className="font-display text-2xl font-semibold">What is real, and what is a proof of concept</h2>
-            <ul className="mt-4 grid gap-x-10 gap-y-2 text-[15px] leading-relaxed text-mute md:grid-cols-2">
-              <li><span className="font-semibold text-ink">Real:</span> Sentinel-2 imagery and NDVI computed live from Microsoft Planetary Computer.</li>
-              <li><span className="font-semibold text-ink">Real:</span> double-counting protection, freezing, revocation and retirement, enforced by a Solidity contract with a full test suite.</li>
-              <li><span className="font-semibold text-ink">Proxy:</span> credits come from a vegetation-vigour formula, not a validated carbon methodology. A production registry needs accredited science.</li>
-              <li><span className="font-semibold text-ink">Demo-only:</span> the "simulate deforestation" button injects a synthetic loss so you can watch the full lifecycle on demand.</li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      <section className="relative z-10 mx-auto max-w-6xl px-5 pb-24">
-        <div className="card relative overflow-hidden p-10 text-center">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_80%_at_50%_0%,rgb(var(--brand)/0.16),transparent)]" aria-hidden />
-          <h2 className="relative font-display text-4xl font-semibold tracking-tight">See a credit live, and kill one.</h2>
-          <p className="relative mx-auto mt-3 max-w-xl text-mute">Register a parcel on real satellite imagery, try to double-count it, then watch the forest vanish.</p>
-          <Link href="/app" className="btn btn-primary relative mt-7 h-12 px-7 text-[15px]">
-            Launch the demo <ArrowRight className="h-4 w-4" />
+      {/* CTA */}
+      <section className="mx-auto max-w-7xl px-5 pb-24 sm:px-8">
+        <div className="relative overflow-hidden rounded-[6px] border-[1.5px] border-ink bg-ink px-8 py-16 text-center text-bg sm:py-24">
+          <div className="bg-topo-light absolute inset-0 opacity-[0.14]" aria-hidden />
+          <h2 className="relative font-display text-5xl leading-none sm:text-8xl">
+            See a credit live.
+            <br />
+            <span className="italic text-lime">Then kill one.</span>
+          </h2>
+          <p className="relative mx-auto mt-6 max-w-xl text-bg/75">
+            Register a parcel on real satellite imagery, try to double-count it, then watch the forest vanish.
+          </p>
+          <Link href="/app" className="btn btn-lime relative mt-10 h-14 px-8 text-base">
+            Open the registry <ArrowRight className="h-5 w-5" />
           </Link>
         </div>
       </section>
 
-      <footer className="relative z-10 border-t border-line/60">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-5 py-8 text-sm text-mute sm:flex-row">
-          <Logo size={22} />
-          <p>Built for the IEEE ClimateChain Global Hackathon 2026 · Carbon Markets &amp; Emissions Transparency</p>
+      <footer className="border-t-[1.5px] border-ink">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-5 py-8 sm:flex-row sm:px-8">
+          <Logo size={24} />
+          <p className="label text-center">IEEE ClimateChain Global Hackathon 2026 · Carbon Markets &amp; Emissions Transparency</p>
         </div>
       </footer>
     </div>

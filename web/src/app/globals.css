@@ -2,18 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  TerraProof visual identity: a survey field-notebook.
+  Warm paper, black ink, contour lines, rubber stamps. One loud accent (highlighter lime).
+*/
 :root {
-  --bg: 6 12 10;
-  --surface: 12 21 18;
-  --raised: 18 31 26;
-  --line: 40 58 51;
-  --ink: 232 241 236;
-  --mute: 143 163 154;
-  --brand: 52 229 160;
-  --amber: 246 185 76;
-  --danger: 255 107 107;
-  --sky: 108 182 255;
-  color-scheme: dark;
+  --bg: 239 235 221; /* paper */
+  --surface: 247 244 234;
+  --raised: 253 251 245;
+  --line: 22 20 15; /* ink: always used with an alpha for hairlines */
+  --ink: 22 20 15;
+  --mute: 104 98 84;
+  --brand: 31 107 74; /* verified forest green */
+  --lime: 200 241 105; /* highlighter */
+  --amber: 166 98 0; /* frozen ochre */
+  --danger: 194 50 27; /* vermilion */
+  --sky: 44 74 138; /* survey blue */
+  color-scheme: light;
 }
 
 html {
@@ -23,194 +28,287 @@ html {
 body {
   background: rgb(var(--bg));
   color: rgb(var(--ink));
-  font-family: var(--font-inter), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-synthesis-weight: none; /* Instrument Serif has a single weight: never fake a bold */
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
 ::selection {
-  background: rgb(var(--brand) / 0.3);
+  background: rgb(var(--lime));
+  color: rgb(var(--ink));
 }
 
-/* Ambient background used on the landing page */
-.bg-aurora {
-  background:
-    radial-gradient(60% 50% at 80% 0%, rgb(var(--brand) / 0.14), transparent 70%),
-    radial-gradient(45% 40% at 0% 20%, rgb(var(--sky) / 0.08), transparent 70%),
-    rgb(var(--bg));
+/* Contour-line texture */
+.bg-topo {
+  background-image: url("/topo.svg");
+  background-size: cover;
+  background-position: center;
+}
+.bg-topo-light {
+  background-image: url("/topo-light.svg");
+  background-size: cover;
+  background-position: center;
+}
+.bg-topo-soft {
+  position: relative;
+}
+.bg-topo-soft::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("/topo.svg");
+  background-size: cover;
+  background-position: center;
+  opacity: 0.07;
+  pointer-events: none;
 }
 
-.bg-grid {
-  background-image:
-    linear-gradient(to right, rgb(255 255 255 / 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(255 255 255 / 0.04) 1px, transparent 1px);
-  background-size: 44px 44px;
-  mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, #000 40%, transparent 100%);
+/* Fine paper grain via layered gradients (no image request) */
+.paper {
+  background-color: rgb(var(--bg));
+  background-image: radial-gradient(rgb(var(--ink) / 0.045) 1px, transparent 1px);
+  background-size: 5px 5px;
 }
 
-.text-gradient {
-  background: linear-gradient(120deg, rgb(var(--brand)) 0%, rgb(190 255 120) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+.text-marker {
+  background: linear-gradient(transparent 58%, rgb(var(--lime)) 58%, rgb(var(--lime)) 92%, transparent 92%);
+  padding: 0 0.08em;
+  margin: 0 -0.04em;
 }
 
-/* Component classes live in the components layer so Tailwind utilities (hidden, sm:inline-flex…) can override them. */
 @layer components {
-.card {
-  background: linear-gradient(180deg, rgb(var(--raised) / 0.7), rgb(var(--surface) / 0.9));
-  border: 1px solid rgb(var(--line) / 0.7);
-  border-radius: 16px;
-  box-shadow: 0 1px 0 0 rgb(255 255 255 / 0.04) inset, 0 12px 32px -16px rgb(0 0 0 / 0.6);
+  .card {
+    background: rgb(var(--raised));
+    border: 1px solid rgb(var(--ink) / 0.16);
+    border-radius: 10px;
+  }
+  /* Loud surfaces: ink outline and a hard offset shadow */
+  .card-hard {
+    background: rgb(var(--raised));
+    border: 1.5px solid rgb(var(--ink));
+    border-radius: 6px;
+    box-shadow: 5px 5px 0 rgb(var(--ink));
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 42px;
+    padding: 0 18px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    border: 1.5px solid rgb(var(--ink));
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+  .btn-primary {
+    background: rgb(var(--ink));
+    color: rgb(var(--bg));
+    box-shadow: 3px 3px 0 rgb(var(--lime));
+  }
+  .btn-primary:hover:not(:disabled) {
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0 rgb(var(--lime));
+  }
+  .btn-primary:active:not(:disabled) {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 rgb(var(--lime));
+  }
+  .btn-lime {
+    background: rgb(var(--lime));
+    color: rgb(var(--ink));
+    box-shadow: 3px 3px 0 rgb(var(--ink));
+  }
+  .btn-lime:hover:not(:disabled) {
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0 rgb(var(--ink));
+  }
+  .btn-lime:active:not(:disabled) {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 rgb(var(--ink));
+  }
+  .btn-ghost {
+    background: transparent;
+    border-color: rgb(var(--ink) / 0.3);
+    color: rgb(var(--ink));
+  }
+  .btn-ghost:hover:not(:disabled) {
+    background: rgb(var(--ink) / 0.06);
+    border-color: rgb(var(--ink));
+  }
+  .btn-danger {
+    background: rgb(var(--danger) / 0.08);
+    border-color: rgb(var(--danger));
+    color: rgb(var(--danger));
+  }
+  .btn-danger:hover:not(:disabled) {
+    background: rgb(var(--danger));
+    color: rgb(var(--bg));
+  }
+  .btn-amber {
+    background: rgb(var(--amber) / 0.08);
+    border-color: rgb(var(--amber));
+    color: rgb(var(--amber));
+  }
+  .btn-amber:hover:not(:disabled) {
+    background: rgb(var(--amber));
+    color: rgb(var(--bg));
+  }
+  .btn-sm {
+    height: 34px;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+
+  .input {
+    width: 100%;
+    height: 42px;
+    padding: 0 12px;
+    border-radius: 6px;
+    background: rgb(var(--surface));
+    border: 1.5px solid rgb(var(--ink) / 0.28);
+    color: rgb(var(--ink));
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.12s ease, box-shadow 0.12s ease;
+  }
+  .input:focus {
+    border-color: rgb(var(--ink));
+    box-shadow: 3px 3px 0 rgb(var(--lime));
+  }
+  .input::placeholder {
+    color: rgb(var(--mute) / 0.75);
+  }
+
+  /* Mono annotation, like a survey label */
+  .label {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgb(var(--mute));
+  }
+  .eyebrow {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgb(var(--brand));
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 24px;
+    padding: 0 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid transparent;
+  }
+  .pill-brand {
+    color: rgb(var(--brand));
+    background: rgb(var(--brand) / 0.09);
+    border-color: rgb(var(--brand) / 0.35);
+  }
+  .pill-amber {
+    color: rgb(var(--amber));
+    background: rgb(var(--amber) / 0.1);
+    border-color: rgb(var(--amber) / 0.4);
+  }
+  .pill-danger {
+    color: rgb(var(--danger));
+    background: rgb(var(--danger) / 0.08);
+    border-color: rgb(var(--danger) / 0.4);
+  }
+  .pill-mute {
+    color: rgb(var(--mute));
+    background: rgb(var(--ink) / 0.04);
+    border-color: rgb(var(--ink) / 0.15);
+  }
+
+  /* Rubber stamp */
+  .stamp {
+    display: inline-block;
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 3px 9px 2px;
+    border: 2px solid currentColor;
+    border-radius: 3px;
+    transform: rotate(-3deg);
+    mix-blend-mode: multiply;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+  .stamp-lg {
+    font-size: 22px;
+    padding: 6px 16px 4px;
+    border-width: 3px;
+    border-radius: 5px;
+    transform: rotate(-8deg);
+  }
+  .stamp-brand {
+    color: rgb(var(--brand));
+  }
+  .stamp-amber {
+    color: rgb(var(--amber));
+  }
+  .stamp-danger {
+    color: rgb(var(--danger));
+  }
 }
 
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  height: 40px;
-  padding: 0 16px;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: -0.005em;
-  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.btn:active:not(:disabled) {
-  transform: translateY(1px);
-}
-.btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-.btn-primary {
-  background: rgb(var(--brand));
-  color: rgb(4 20 14);
-}
-.btn-primary:hover:not(:disabled) {
-  background: rgb(98 240 186);
-}
-.btn-ghost {
-  background: rgb(255 255 255 / 0.04);
-  border: 1px solid rgb(var(--line));
-  color: rgb(var(--ink));
-}
-.btn-ghost:hover:not(:disabled) {
-  background: rgb(255 255 255 / 0.08);
-  border-color: rgb(var(--mute) / 0.5);
-}
-.btn-danger {
-  background: rgb(var(--danger) / 0.12);
-  border: 1px solid rgb(var(--danger) / 0.4);
-  color: rgb(255 150 150);
-}
-.btn-danger:hover:not(:disabled) {
-  background: rgb(var(--danger) / 0.2);
-}
-.btn-amber {
-  background: rgb(var(--amber) / 0.12);
-  border: 1px solid rgb(var(--amber) / 0.4);
-  color: rgb(var(--amber));
-}
-.btn-amber:hover:not(:disabled) {
-  background: rgb(var(--amber) / 0.2);
-}
-.btn-sm {
-  height: 34px;
-  padding: 0 12px;
-  font-size: 13px;
-}
-
-.input {
-  width: 100%;
-  height: 42px;
-  padding: 0 12px;
-  border-radius: 10px;
-  background: rgb(var(--bg) / 0.6);
-  border: 1px solid rgb(var(--line));
-  color: rgb(var(--ink));
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-.input:focus {
-  border-color: rgb(var(--brand) / 0.7);
-  box-shadow: 0 0 0 3px rgb(var(--brand) / 0.15);
-}
-.input::placeholder {
-  color: rgb(var(--mute) / 0.7);
-}
-
-.eyebrow {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgb(var(--brand));
-}
-
-.pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 24px;
-  padding: 0 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  border: 1px solid transparent;
-}
-.pill-brand {
-  color: rgb(var(--brand));
-  background: rgb(var(--brand) / 0.1);
-  border-color: rgb(var(--brand) / 0.3);
-}
-.pill-amber {
-  color: rgb(var(--amber));
-  background: rgb(var(--amber) / 0.1);
-  border-color: rgb(var(--amber) / 0.35);
-}
-.pill-danger {
-  color: rgb(255 140 140);
-  background: rgb(var(--danger) / 0.1);
-  border-color: rgb(var(--danger) / 0.35);
-}
-.pill-mute {
-  color: rgb(var(--mute));
-  background: rgb(255 255 255 / 0.04);
-  border-color: rgb(var(--line));
-}
+/* Perforated edge, like a torn certificate */
+.perforated {
+  --hole: 7px;
+  -webkit-mask-image: radial-gradient(circle at var(--hole) 50%, transparent 0 calc(var(--hole) - 1px), #000 var(--hole));
 }
 
 /* Leaflet tweaks */
 .leaflet-container {
-  background: rgb(var(--bg));
-  font-family: var(--font-inter), system-ui, sans-serif;
+  background: rgb(var(--ink));
+  font-family: var(--font-sans), system-ui, sans-serif;
 }
 .leaflet-control-attribution {
-  background: rgb(var(--bg) / 0.7) !important;
+  background: rgb(var(--bg) / 0.85) !important;
   color: rgb(var(--mute)) !important;
   font-size: 10px !important;
 }
 .leaflet-control-attribution a {
   color: rgb(var(--mute)) !important;
 }
-.leaflet-bar a {
-  background: rgb(var(--surface)) !important;
-  color: rgb(var(--ink)) !important;
-  border-color: rgb(var(--line)) !important;
-}
-.leaflet-bar a:hover {
+.leaflet-tooltip {
   background: rgb(var(--raised)) !important;
+  color: rgb(var(--ink)) !important;
+  border: 1.5px solid rgb(var(--ink)) !important;
+  border-radius: 4px !important;
+  box-shadow: 2px 2px 0 rgb(var(--ink)) !important;
+  font-size: 12px !important;
+}
+.leaflet-tooltip-top:before {
+  border-top-color: rgb(var(--ink)) !important;
 }
 
-/* Thin scrollbars */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgb(var(--line)) transparent;
+  scrollbar-color: rgb(var(--ink) / 0.25) transparent;
 }
 
 @media (prefers-reduced-motion: reduce) {

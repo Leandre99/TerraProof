@@ -5,31 +5,43 @@ import Link from "next/link";
 import { useRegistry } from "@/lib/registry/context";
 import type { ParcelStatus } from "@/lib/registry/types";
 
+/** Mark: a 3×3 grid of cells with one claimed in highlighter lime. */
 export function Logo({ size = 28 }: { size?: number }) {
   return (
-    <Link href="/" className="flex items-center gap-2.5" aria-label="TerraProof home">
+    <Link href="/" className="group flex items-center gap-2.5" aria-label="TerraProof home">
       <svg width={size} height={size} viewBox="0 0 32 32" fill="none" aria-hidden>
-        <rect x="1" y="1" width="30" height="30" rx="9" fill="rgb(var(--brand) / 0.12)" stroke="rgb(var(--brand) / 0.5)" />
-        <path d="M16 6 24 10v6c0 4.6-3.2 8.4-8 10-4.8-1.6-8-5.4-8-10v-6l8-4Z" stroke="rgb(var(--brand))" strokeWidth="1.6" strokeLinejoin="round" />
-        <path d="m12 16 3 3 5.5-6" stroke="rgb(var(--brand))" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <rect x="1.5" y="1.5" width="29" height="29" rx="3" fill="rgb(var(--raised))" stroke="rgb(var(--ink))" strokeWidth="1.8" />
+        {[0, 1, 2].flatMap((r) =>
+          [0, 1, 2].map((c) => {
+            const claimed = r === 1 && c === 2;
+            const owned = (r === 0 && c < 2) || (r === 1 && c === 0);
+            return (
+              <rect
+                key={`${r}${c}`}
+                x={5 + c * 8}
+                y={5 + r * 8}
+                width="6"
+                height="6"
+                rx="1"
+                fill={claimed ? "rgb(var(--lime))" : owned ? "rgb(var(--brand))" : "transparent"}
+                stroke="rgb(var(--ink))"
+                strokeWidth="1.2"
+                className={claimed ? "transition-transform group-hover:translate-x-[1px]" : undefined}
+              />
+            );
+          })
+        )}
       </svg>
-      <span className="font-display text-[19px] font-semibold tracking-tight">
-        Terra<span className="text-brand">Proof</span>
+      <span className="font-display text-[26px] leading-none tracking-tight">
+        Terra<span className="italic">Proof</span>
       </span>
     </Link>
   );
 }
 
+/** Rubber-stamp status badge. */
 export function StatusPill({ status }: { status: ParcelStatus }) {
-  return status === "active" ? (
-    <span className="pill pill-brand">
-      <span className="h-1.5 w-1.5 rounded-full bg-brand" /> Active
-    </span>
-  ) : (
-    <span className="pill pill-amber">
-      <span className="h-1.5 w-1.5 animate-blink rounded-full bg-amber" /> Frozen
-    </span>
-  );
+  return status === "active" ? <span className="stamp stamp-brand">Active</span> : <span className="stamp stamp-amber">Frozen</span>;
 }
 
 export function Toasts() {
@@ -41,9 +53,9 @@ export function Toasts() {
     info: <Info className="h-5 w-5 text-sky" />,
   } as const;
   return (
-    <div className="pointer-events-none fixed bottom-4 right-4 z-[2000] flex w-[min(380px,calc(100vw-2rem))] flex-col gap-2" aria-live="polite">
+    <div className="pointer-events-none fixed bottom-4 right-4 z-[2000] flex w-[min(380px,calc(100vw-2rem))] flex-col gap-3" aria-live="polite">
       {toasts.map((t) => (
-        <div key={t.id} className="card pointer-events-auto flex animate-rise items-start gap-3 p-3.5 shadow-2xl">
+        <div key={t.id} className="card-hard pointer-events-auto flex animate-rise items-start gap-3 p-3.5">
           <div className="mt-0.5">{icon[t.kind]}</div>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold">{t.title}</p>

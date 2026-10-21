@@ -1,7 +1,8 @@
 "use client";
 
 import "leaflet/dist/leaflet.css";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { CircleMarker, MapContainer, Polygon, Polyline, Rectangle, TileLayer, Tooltip, useMap, useMapEvents } from "react-leaflet";
 import type { LatLngBoundsExpression } from "leaflet";
 import { cellBounds, type LatLng } from "@/lib/geo";
@@ -35,6 +36,31 @@ function Clicks({ drawing, onAddPoint }: { drawing: boolean; onAddPoint: (p: Lat
   return null;
 }
 
+/** Survey-style coordinate readout pinned on the map. */
+function Readout() {
+  const map = useMap();
+  const [pos, setPos] = useState<{ lat: number; lng: number; z: number }>(() => ({ ...map.getCenter(), z: map.getZoom() }));
+  useMapEvents({
+    mousemove: (e) => setPos({ lat: e.latlng.lat, lng: e.latlng.lng, z: map.getZoom() }),
+    zoomend: () => setPos((p) => ({ ...p, z: map.getZoom() })),
+  });
+  const dms = (v: number, pos: string, neg: string) => {
+    const a = Math.abs(v);
+    const d = Math.floor(a);
+    const m = Math.floor((a - d) * 60);
+    const s = ((a - d - m / 60) * 3600).toFixed(1);
+    return `${d}°${String(m).padStart(2, "0")}′${s.padStart(4, "0")}″${v >= 0 ? pos : neg}`;
+  };
+  return createPortal(
+    <div className="pointer-events-none absolute right-3 top-3 z-[1000] rounded-[4px] border-[1.5px] border-ink bg-raised px-2.5 py-1.5 font-mono text-[11px] leading-snug text-ink">
+      <div>{dms(pos.lat, "N", "S")}</div>
+      <div>{dms(pos.lng, "E", "W")}</div>
+      <div className="text-mute">zoom {pos.z}</div>
+    </div>,
+    map.getContainer()
+  );
+}
+
 function FlyTo({ parcel }: { parcel: Parcel | undefined }) {
   const map = useMap();
   useEffect(() => {
@@ -61,9 +87,9 @@ export default function MapView({ parcels, selectedId, onSelect, draft, drawing,
   );
 
   const colorOf = (p: Parcel) => {
-    if (p.id === flashParcelId) return "#FF6B6B";
-    if (p.status === "flagged") return "#F6B94C";
-    return p.owner === me ? "#34E5A0" : "#6CB6FF";
+    if (p.id === flashParcelId) return "#FF4D2E";
+    if (p.status === "flagged") return "#FFB020";
+    return p.owner === me ? "#C8F169" : "#7FC8FF";
   };
 
   return (
@@ -71,6 +97,7 @@ export default function MapView({ parcels, selectedId, onSelect, draft, drawing,
       <TileLayer url={ESRI} attribution="Imagery © Esri, Maxar, Earthstar Geographics" maxZoom={19} />
       <TileLayer url={LABELS} opacity={0.7} maxZoom={19} />
       <Clicks drawing={drawing} onAddPoint={onAddPoint} />
+      <Readout />
       <FlyTo parcel={selected} />
 
       {parcels.map((p) => {
@@ -110,12 +137,12 @@ export default function MapView({ parcels, selectedId, onSelect, draft, drawing,
       {draft.length > 0 && (
         <>
           {draft.length >= 3 ? (
-            <Polygon positions={draft} pathOptions={{ color: "#BFFF78", weight: 2, dashArray: "5 5", fillColor: "#BFFF78", fillOpacity: 0.18 }} />
+            <Polygon positions={draft} pathOptions={{ color: "#FFFFFF", weight: 2.5, dashArray: "6 6", fillColor: "#FFFFFF", fillOpacity: 0.22 }} />
           ) : (
-            <Polyline positions={draft} pathOptions={{ color: "#BFFF78", weight: 2, dashArray: "5 5" }} />
+            <Polyline positions={draft} pathOptions={{ color: "#FFFFFF", weight: 2.5, dashArray: "6 6" }} />
           )}
           {draft.map((p, i) => (
-            <CircleMarker key={i} center={p} radius={5} pathOptions={{ color: "#06140E", weight: 2, fillColor: "#BFFF78", fillOpacity: 1 }} />
+            <CircleMarker key={i} center={p} radius={6} pathOptions={{ color: "#16140F", weight: 2.5, fillColor: "#C8F169", fillOpacity: 1 }} />
           ))}
         </>
       )}
