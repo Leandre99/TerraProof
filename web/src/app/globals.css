@@ -1,0 +1,224 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: 6 12 10;
+  --surface: 12 21 18;
+  --raised: 18 31 26;
+  --line: 40 58 51;
+  --ink: 232 241 236;
+  --mute: 143 163 154;
+  --brand: 52 229 160;
+  --amber: 246 185 76;
+  --danger: 255 107 107;
+  --sky: 108 182 255;
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: rgb(var(--bg));
+  color: rgb(var(--ink));
+  font-family: var(--font-inter), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: rgb(var(--brand) / 0.3);
+}
+
+/* Ambient background used on the landing page */
+.bg-aurora {
+  background:
+    radial-gradient(60% 50% at 80% 0%, rgb(var(--brand) / 0.14), transparent 70%),
+    radial-gradient(45% 40% at 0% 20%, rgb(var(--sky) / 0.08), transparent 70%),
+    rgb(var(--bg));
+}
+
+.bg-grid {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.04) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, #000 40%, transparent 100%);
+}
+
+.text-gradient {
+  background: linear-gradient(120deg, rgb(var(--brand)) 0%, rgb(190 255 120) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Component classes live in the components layer so Tailwind utilities (hidden, sm:inline-flex…) can override them. */
+@layer components {
+.card {
+  background: linear-gradient(180deg, rgb(var(--raised) / 0.7), rgb(var(--surface) / 0.9));
+  border: 1px solid rgb(var(--line) / 0.7);
+  border-radius: 16px;
+  box-shadow: 0 1px 0 0 rgb(255 255 255 / 0.04) inset, 0 12px 32px -16px rgb(0 0 0 / 0.6);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: rgb(var(--brand));
+  color: rgb(4 20 14);
+}
+.btn-primary:hover:not(:disabled) {
+  background: rgb(98 240 186);
+}
+.btn-ghost {
+  background: rgb(255 255 255 / 0.04);
+  border: 1px solid rgb(var(--line));
+  color: rgb(var(--ink));
+}
+.btn-ghost:hover:not(:disabled) {
+  background: rgb(255 255 255 / 0.08);
+  border-color: rgb(var(--mute) / 0.5);
+}
+.btn-danger {
+  background: rgb(var(--danger) / 0.12);
+  border: 1px solid rgb(var(--danger) / 0.4);
+  color: rgb(255 150 150);
+}
+.btn-danger:hover:not(:disabled) {
+  background: rgb(var(--danger) / 0.2);
+}
+.btn-amber {
+  background: rgb(var(--amber) / 0.12);
+  border: 1px solid rgb(var(--amber) / 0.4);
+  color: rgb(var(--amber));
+}
+.btn-amber:hover:not(:disabled) {
+  background: rgb(var(--amber) / 0.2);
+}
+.btn-sm {
+  height: 34px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+.input {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  border-radius: 10px;
+  background: rgb(var(--bg) / 0.6);
+  border: 1px solid rgb(var(--line));
+  color: rgb(var(--ink));
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.input:focus {
+  border-color: rgb(var(--brand) / 0.7);
+  box-shadow: 0 0 0 3px rgb(var(--brand) / 0.15);
+}
+.input::placeholder {
+  color: rgb(var(--mute) / 0.7);
+}
+
+.eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgb(var(--brand));
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+.pill-brand {
+  color: rgb(var(--brand));
+  background: rgb(var(--brand) / 0.1);
+  border-color: rgb(var(--brand) / 0.3);
+}
+.pill-amber {
+  color: rgb(var(--amber));
+  background: rgb(var(--amber) / 0.1);
+  border-color: rgb(var(--amber) / 0.35);
+}
+.pill-danger {
+  color: rgb(255 140 140);
+  background: rgb(var(--danger) / 0.1);
+  border-color: rgb(var(--danger) / 0.35);
+}
+.pill-mute {
+  color: rgb(var(--mute));
+  background: rgb(255 255 255 / 0.04);
+  border-color: rgb(var(--line));
+}
+}
+
+/* Leaflet tweaks */
+.leaflet-container {
+  background: rgb(var(--bg));
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+.leaflet-control-attribution {
+  background: rgb(var(--bg) / 0.7) !important;
+  color: rgb(var(--mute)) !important;
+  font-size: 10px !important;
+}
+.leaflet-control-attribution a {
+  color: rgb(var(--mute)) !important;
+}
+.leaflet-bar a {
+  background: rgb(var(--surface)) !important;
+  color: rgb(var(--ink)) !important;
+  border-color: rgb(var(--line)) !important;
+}
+.leaflet-bar a:hover {
+  background: rgb(var(--raised)) !important;
+}
+
+/* Thin scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--line)) transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
