@@ -20,7 +20,7 @@ import {
  * explore the product without a wallet. The on-chain adapter swaps it out 1:1.
  */
 
-const STORAGE_KEY = "terraproof:sim:v2";
+const STORAGE_KEY = "terraproof:sim:v3"; // bumped: reseeds visitors who stored the old demo parcel names
 export const SIM_ACCOUNT = "0xDE30...0001";
 const SEED_OWNER_A = "0x7A3f...c91B";
 const SEED_OWNER_B = "0x19d2...44aE";
@@ -60,8 +60,8 @@ function seedState(): RegistryState {
     };
   };
   const parcels = [
-    mk(1, "Coopérative agroforestière de Savalou", SEED_OWNER_A, rect(7.9325, 2.056, 7.9345, 2.0595), 420, 41),
-    mk(2, "Ferme cajou Adjigo", SEED_OWNER_B, rect(7.9325, 2.0605, 7.934, 2.063), 180, 17),
+    mk(1, "Savalou agroforestry cooperative", SEED_OWNER_A, rect(7.9325, 2.056, 7.9345, 2.0595), 420, 41),
+    mk(2, "Adjigo cashew farm", SEED_OWNER_B, rect(7.9325, 2.0605, 7.934, 2.063), 180, 17),
   ];
   const events: LedgerEvent[] = parcels
     .flatMap((p) => [
