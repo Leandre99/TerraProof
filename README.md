@@ -52,6 +52,17 @@ The web app has two interchangeable back-ends behind one `Registry` interface:
 * **Demo-only:** the *Simulate deforestation* button injects a synthetic loss so the full lifecycle can be shown on demand. It is labelled "simulated" everywhere and can be disabled with `ALLOW_SIMULATED_LOSS=false`.
 * **Trust model:** the oracle is a single trusted verifier, bounded by an on-chain per-cell issuance ceiling. Decentralising it (multiple verifiers, staking) is on the roadmap.
 
+## Live deployment
+
+| | |
+|---|---|
+| **Network** | Base Sepolia testnet (chain id `84532`) |
+| **Contract** | [`0xF90808A53E28312b15E9344BA56df1e47E79A820`](https://sepolia.basescan.org/address/0xF90808A53E28312b15E9344BA56df1e47E79A820) |
+| **Verifier (oracle) wallet** | [`0xcd645F95254F557aB0DcaFa1acD429b3Dd5Ca645`](https://sepolia.basescan.org/address/0xcd645F95254F557aB0DcaFa1acD429b3Dd5Ca645) (test-only wallet) |
+| **Live demo** | _add the Vercel URL here_ |
+
+The address and deploy block are also stored in [`web/src/contracts/deployment.json`](web/src/contracts/deployment.json).
+
 ## Repository layout
 
 ```
