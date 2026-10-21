@@ -71,7 +71,7 @@ export class ChainRegistry implements Registry {
     if (!deployment.address) throw new Error("No contract deployed yet. Run the deploy script first.");
     if (!window.ethereum) {
       // No wallet: anyone can still read the public ledger and proofs through the public RPC.
-      if (deployment.rpcUrl) return new ChainRegistry(new JsonRpcProvider(deployment.rpcUrl), null, null);
+      if (deployment.rpcUrl) return new ChainRegistry(new JsonRpcProvider(deployment.rpcUrl, deployment.chainId, { staticNetwork: true }), null, null);
       throw new Error("No wallet found. Install MetaMask or use the simulation mode.");
     }
     const browser = new BrowserProvider(window.ethereum);
@@ -86,7 +86,7 @@ export class ChainRegistry implements Registry {
     }
     const fresh = new BrowserProvider(window.ethereum);
     const signer = await fresh.getSigner();
-    const reader = deployment.rpcUrl ? new JsonRpcProvider(deployment.rpcUrl) : fresh;
+    const reader = deployment.rpcUrl ? new JsonRpcProvider(deployment.rpcUrl, deployment.chainId, { staticNetwork: true }) : fresh;
     return new ChainRegistry(reader, signer, await signer.getAddress());
   }
 
@@ -121,33 +121,37 @@ export class ChainRegistry implements Registry {
 
   async load(): Promise<RegistryState> {
     const c = this.read;
+    // The activity feed and every parcel are read in parallel: sequential RPC round-trips made the first load slow.
+    const logsPromise = this.loadLogs();
     const count = Number(await c.parcelCount());
-    const parcels: Parcel[] = [];
     const evidence = new Map<number, string>();
-    for (let id = 1; id <= count; id++) {
-      const p = await c.getParcel(id);
-      evidence.set(id, String(p.lastEvidence));
-      const meta = decodeMetadata(p.metadataURI);
-      const polygon = (meta?.polygon ?? []) as LatLng[];
-      const cells = polygonToCells(polygon);
-      const holdings = Number(await c.balanceOf(p.owner, id));
-      parcels.push({
-        id,
-        name: meta?.name ?? `Parcel #${id}`,
-        owner: p.owner,
-        polygon,
-        cells: cells.map(String),
-        areaHa: cellsAreaHa(cells),
-        status: STATUS_BY_INDEX[Number(p.status)] === "flagged" ? "flagged" : "active",
-        registeredAt: Number(p.registeredAt) * 1000,
-        issued: Number(p.issued),
-        revoked: Number(p.revoked),
-        retired: Number(p.retired),
-        holdings,
-      });
-    }
+    const parcels: Parcel[] = await Promise.all(
+      Array.from({ length: count }, async (_, i) => {
+        const id = i + 1;
+        const p = await c.getParcel(id);
+        evidence.set(id, String(p.lastEvidence));
+        const meta = decodeMetadata(p.metadataURI);
+        const polygon = (meta?.polygon ?? []) as LatLng[];
+        const cells = polygonToCells(polygon);
+        const holdings = Number(await c.balanceOf(p.owner, id));
+        return {
+          id,
+          name: meta?.name ?? `Parcel #${id}`,
+          owner: p.owner,
+          polygon,
+          cells: cells.map(String),
+          areaHa: cellsAreaHa(cells),
+          status: STATUS_BY_INDEX[Number(p.status)] === "flagged" ? ("flagged" as const) : ("active" as const),
+          registeredAt: Number(p.registeredAt) * 1000,
+          issued: Number(p.issued),
+          revoked: Number(p.revoked),
+          retired: Number(p.retired),
+          holdings,
+        };
+      })
+    );
 
-    const { events, retirements, reports, latestIssued } = await this.loadLogs();
+    const { events, retirements, reports, latestIssued } = await logsPromise;
     const cache = this.cachedReports();
     for (const parcel of parcels) {
       const hash = String(evidence.get(parcel.id) ?? "").toLowerCase();
@@ -213,10 +217,12 @@ export class ChainRegistry implements Registry {
           await fetchRange(from, Math.min(latest, from + LOG_CHUNK - 1));
         }
       }
-      for (const b of new Set(logs.map((l) => l.blockNumber))) {
-        const blk = await this.reader.getBlock(b);
-        blockTs.set(b, (blk?.timestamp ?? 0) * 1000);
-      }
+      await Promise.all(
+        [...new Set(logs.map((l) => l.blockNumber))].map(async (b) => {
+          const blk = await this.reader.getBlock(b);
+          blockTs.set(b, (blk?.timestamp ?? 0) * 1000);
+        })
+      );
     } catch {
       // The activity feed is a nicety: parcels and balances are read from contract state, so never fail the whole view.
       logs.length = 0;

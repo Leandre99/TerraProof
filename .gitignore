@@ -8,3 +8,7 @@ contracts/cache/
 contracts/typechain-types/
 contracts/coverage/
 contracts/coverage.json
+video/.venv/
+video/out/
+video/voice/
+__pycache__/

@@ -1,0 +1,46 @@
+{
+  "voice": "Microsoft Zira Desktop",
+  "rate": 0,
+  "sections": [
+    {
+      "id": "intro",
+      "text": "Terra Proof. Carbon credits you can verify from space."
+    },
+    {
+      "id": "problem",
+      "text": "Carbon markets run on trust, and trust is what they are missing. The same forest can be sold twice. Claims cannot be checked. And a credit survives even after the trees are cut. Here is the idea, as a toy. I claim a few cells of land. Now I try to claim a cell that already belongs to someone else. Rejected. A cell has one owner, ever."
+    },
+    {
+      "id": "how",
+      "text": "Terra Proof turns that rule into a registry. A farmer claims land. A satellite audits it. The contract mints credits with the evidence attached. Monitoring never stops. And buyers retire credits with a public proof."
+    },
+    {
+      "id": "register",
+      "text": "Let's see it for real. A farmer in Benin names her parcel and outlines it on live satellite imagery. The parcel is cut into cells of about thirty eight by nineteen meters, and written to the ledger. These cells now belong to her, exclusively."
+    },
+    {
+      "id": "verify",
+      "text": "Now the audit. The oracle pulls live Sentinel two imagery over the polygon, and computes the vegetation index, N D V I. The contract mints credits, and anchors the hash of the satellite report next to them, so anyone can check the evidence. This is a proof of concept formula, not a certified carbon methodology, and the app says so."
+    },
+    {
+      "id": "attack",
+      "text": "Now, the attack. Someone tries to register the same land again, slightly shifted. The smart contract reverts the transaction. Double counting is blocked by construction, not by policy."
+    },
+    {
+      "id": "living",
+      "text": "Credits are alive. When monitoring detects a sharp drop in vegetation, here a simulated clearing, the parcel is frozen. No transfer, no retirement. If the loss is confirmed, the credits are revoked, with the satellite report as evidence."
+    },
+    {
+      "id": "retire",
+      "text": "If the land recovers, the flag is cleared and the parcel is verified again. A buyer can then retire the credits. Every step ends in a public proof page, with a Q R code that anyone can scan."
+    },
+    {
+      "id": "onchain",
+      "text": "The registry is also deployed on Base Sepolia. Anyone can read the live parcel, its credits, and the satellite evidence, straight from the blockchain. The contract is covered by seventeen automated tests."
+    },
+    {
+      "id": "outro",
+      "text": "Next: a registry of registries, to catch double counting across Verra and Gold Standard. Verification that costs cents, for smallholders in West Africa. And transparent units for Article six and C O P thirty one. Terra Proof. Carbon credits you can verify from space."
+    }
+  ]
+}
