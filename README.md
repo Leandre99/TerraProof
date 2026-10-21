@@ -59,7 +59,7 @@ The web app has two interchangeable back-ends behind one `Registry` interface:
 | **Network** | Base Sepolia testnet (chain id `84532`) |
 | **Contract** | [`0xF90808A53E28312b15E9344BA56df1e47E79A820`](https://sepolia.basescan.org/address/0xF90808A53E28312b15E9344BA56df1e47E79A820) |
 | **Verifier (oracle) wallet** | [`0xcd645F95254F557aB0DcaFa1acD429b3Dd5Ca645`](https://sepolia.basescan.org/address/0xcd645F95254F557aB0DcaFa1acD429b3Dd5Ca645) (test-only wallet) |
-| **Live demo** | _add the Vercel URL here_ |
+| **Live demo** | https://terraproof-rust.vercel.app |
 
 The address and deploy block are also stored in [`web/src/contracts/deployment.json`](web/src/contracts/deployment.json).
 

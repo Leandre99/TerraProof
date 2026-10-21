@@ -80,7 +80,7 @@ Trust in carbon markets is a data-integrity problem as much as a financial one. 
 Solidity, Hardhat, OpenZeppelin, Next.js, React, TypeScript, Tailwind CSS, Leaflet, ethers.js, Sentinel-2, Microsoft Planetary Computer, Base Sepolia, Vercel
 
 ## Links
-- **Live demo:** [your Vercel URL]
+- **Live demo:** https://terraproof-rust.vercel.app
 - **Code repository:** https://github.com/Leandre99/TerraProof
 - **Demo video (3 to 5 min):** [your video URL]
-- **Contract on testnet (if deployed):** [explorer URL]
+- **Contract on Base Sepolia:** https://sepolia.basescan.org/address/0xF90808A53E28312b15E9344BA56df1e47E79A820
