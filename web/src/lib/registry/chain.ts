@@ -342,7 +342,7 @@ export class ChainRegistry implements Registry {
     return json as T;
   }
 
-  async verify(parcelId: number, _opts?: { asOf?: string }): Promise<MrvReport> {
+  async verify(parcelId: number): Promise<MrvReport> {
     const { report } = await this.oracle<{ report: MrvReport }>("verify", parcelId);
     this.cacheReport(report, parcelId);
     return report;
