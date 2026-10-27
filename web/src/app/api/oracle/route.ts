@@ -1,28 +1,19 @@
 import { NextResponse } from "next/server";
-import { Contract, JsonRpcProvider, Wallet } from "ethers";
-import deployment from "@/contracts/deployment.json";
-import { TERRAPROOF_ABI, decodeMetadata, encodeDataUri } from "@/lib/registry/abi";
+import { decodeMetadata, encodeDataUri } from "@/lib/registry/abi";
 import { cellsAreaHa, polygonToCells, type LatLng } from "@/lib/geo";
-import { FLAG_DROP_PCT, runMrv } from "@/lib/mrv";
+import { runMrv } from "@/lib/mrv";
+import { castVotes, getOracle } from "@/lib/oracle";
 
 /**
- * On-chain MRV oracle. Holds the VERIFIER key (server side only), re-runs the satellite
+ * On-chain MRV oracle. Holds the VERIFIER keys (server side only), re-runs the satellite
  * analysis itself (it never trusts a report sent by the browser) and submits the
- * transaction. Used by the web app in "On-chain" mode.
+ * transaction(s). Used by the web app in "On-chain" mode.
  */
 
 export const maxDuration = 60;
 export const dynamic = "force-dynamic";
 
 const MAX_CREDITS_PER_CELL = 50;
-
-function oracle() {
-  const key = process.env.VERIFIER_PRIVATE_KEY;
-  const rpc = process.env.RPC_URL || deployment.rpcUrl;
-  if (!key || !rpc || !deployment.address) throw new Error("Oracle is not configured (VERIFIER_PRIVATE_KEY, RPC_URL, deployment).");
-  const wallet = new Wallet(key, new JsonRpcProvider(rpc));
-  return new Contract(deployment.address, TERRAPROOF_ABI, wallet);
-}
 
 export async function POST(req: Request) {
   try {
@@ -33,7 +24,8 @@ export async function POST(req: Request) {
     };
     if (!Number.isInteger(parcelId) || parcelId < 1) return NextResponse.json({ error: "Invalid parcel" }, { status: 400 });
 
-    const c = oracle();
+    const o = await getOracle();
+    const c = o.read;
     const p = await c.getParcel(parcelId);
     const meta = decodeMetadata(p.metadataURI);
     if (!meta) return NextResponse.json({ error: "Parcel metadata unreadable" }, { status: 422 });
@@ -50,22 +42,22 @@ export async function POST(req: Request) {
       let tx: string | undefined;
       if (amount > 0) {
         // The full report travels in the event log so anyone can re-check the evidence from the chain alone.
-        const sent = await c.issueCredits(parcelId, amount, report.hash, encodeDataUri(report));
-        await sent.wait();
-        tx = sent.hash;
+        const uri = encodeDataUri(report);
+        tx = await castVotes(o, (v) => v.issueCredits(parcelId, amount, report.hash, uri));
       }
-      return NextResponse.json({ report, issued: amount, tx });
+      return NextResponse.json({ report, issued: amount, tx, quorum: o.threshold });
     }
 
     if (action === "monitor") {
       if (status !== 1) return NextResponse.json({ error: "Parcel is already flagged" }, { status: 409 });
       const allowSim = process.env.ALLOW_SIMULATED_LOSS !== "false";
       const report = await runMrv({ polygon, areaHa, simulateLoss: !!simulateLoss && allowSim });
-      const flagged = report.dropPct >= FLAG_DROP_PCT;
+      const flagged = !!report.flag;
       let tx: string | undefined;
       if (flagged) {
-        const reason = `NDVI dropped ${report.dropPct.toFixed(0)}% below the trailing average${report.simulated ? " (simulated event)" : ""}`;
-        const sent = await c.flagParcel(parcelId, report.hash, reason);
+        // ONE verifier is enough to freeze: freezing is reversible and always the safe direction.
+        const reason = `NDVI dropped ${report.dropPct.toFixed(0)}% (${report.method}), NDMI corroborates${report.simulated ? " (simulated event)" : ""}`;
+        const sent = await o.contracts[0].flagParcel(parcelId, report.hash, reason);
         await sent.wait();
         tx = sent.hash;
       }
@@ -74,18 +66,30 @@ export async function POST(req: Request) {
 
     if (action === "revoke") {
       if (status !== 2) return NextResponse.json({ error: "Parcel is not flagged" }, { status: 409 });
-      const amount: bigint = await c.balanceOf(p.owner, parcelId);
-      if (amount === 0n) return NextResponse.json({ error: "No credits to revoke" }, { status: 409 });
-      const sent = await c.revokeCredits(parcelId, p.owner, amount, p.lastEvidence);
-      await sent.wait();
-      return NextResponse.json({ revoked: Number(amount), tx: sent.hash });
+      // Credits can sit with the owner and, when the parcel has one, with its community wallet.
+      const holders: string[] = [p.owner];
+      try {
+        const community: string = await c.communityOf(parcelId);
+        if (community && community !== "0x0000000000000000000000000000000000000000") holders.push(community);
+      } catch {
+        /* contract deployed before the community share existed */
+      }
+      let total = 0;
+      let tx = "";
+      for (const holder of holders) {
+        const amount: bigint = await c.balanceOf(holder, parcelId);
+        if (amount === 0n) continue;
+        tx = await castVotes(o, (v) => v.revokeCredits(parcelId, holder, amount, p.lastEvidence));
+        total += Number(amount);
+      }
+      if (total === 0) return NextResponse.json({ error: "No credits to revoke" }, { status: 409 });
+      return NextResponse.json({ revoked: total, tx, quorum: o.threshold });
     }
 
     if (action === "clear") {
       if (status !== 2) return NextResponse.json({ error: "Parcel is not flagged" }, { status: 409 });
-      const sent = await c.clearFlag(parcelId, p.lastEvidence);
-      await sent.wait();
-      return NextResponse.json({ tx: sent.hash });
+      const tx = await castVotes(o, (v) => v.clearFlag(parcelId, p.lastEvidence));
+      return NextResponse.json({ tx, quorum: o.threshold });
     }
 
     return NextResponse.json({ error: "Unknown action" }, { status: 400 });

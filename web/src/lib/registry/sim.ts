@@ -20,10 +20,15 @@ import {
  * explore the product without a wallet. The on-chain adapter swaps it out 1:1.
  */
 
-const STORAGE_KEY = "terraproof:sim:v3"; // bumped: reseeds visitors who stored the old demo parcel names
+const STORAGE_KEY = "terraproof:sim:v4"; // bumped: reseeds visitors who stored an older demo state
 export const SIM_ACCOUNT = "0xDE30...0001";
 const SEED_OWNER_A = "0x7A3f...c91B";
 const SEED_OWNER_B = "0x19d2...44aE";
+const SEED_OWNER_C = "0x5Ce8...02d7";
+
+/** The simulator mimics a 2-of-3 verifier quorum (see TerraProof.sol); the 3 verifiers are simulated here. */
+export const SIM_QUORUM = { threshold: 2, verifiers: 3 };
+const quorumNote = `approved by ${SIM_QUORUM.threshold} of ${SIM_QUORUM.verifiers} verifiers (simulated)`;
 
 function rect(s: number, w: number, n: number, e: number): LatLng[] {
   return [
@@ -42,8 +47,17 @@ function pseudoTx(): string {
 
 function seedState(): RegistryState {
   const now = Date.now();
-  const mk = (id: number, name: string, owner: string, polygon: LatLng[], issued: number, ageDays: number): Parcel => {
+  const mk = (
+    id: number,
+    name: string,
+    owner: string,
+    polygon: LatLng[],
+    issued: number,
+    ageDays: number,
+    community?: { name: string; bps: number }
+  ): Parcel => {
     const cells = polygonToCells(polygon);
+    const toCommunity = community ? Math.floor((issued * community.bps) / 10_000) : 0;
     return {
       id,
       name,
@@ -56,12 +70,18 @@ function seedState(): RegistryState {
       issued,
       revoked: 0,
       retired: 0,
-      holdings: issued,
+      holdings: issued - toCommunity,
+      community: community ? { name: community.name, bps: community.bps, holdings: toCommunity } : undefined,
     };
   };
   const parcels = [
     mk(1, "Savalou agroforestry cooperative", SEED_OWNER_A, rect(7.9325, 2.056, 7.9345, 2.0595), 420, 41),
     mk(2, "Adjigo cashew farm", SEED_OWNER_B, rect(7.9325, 2.0605, 7.934, 2.063), 180, 17),
+    // Mangrove restoration on the Bouche du Roy lagoon (Grand-Popo, Benin); 20 % of every issuance goes to the village.
+    mk(3, "Grand-Popo mangrove committee", SEED_OWNER_C, rect(6.2848, 1.8205, 6.2878, 1.8245), 310, 9, {
+      name: "Grand-Popo village fund",
+      bps: 2000,
+    }),
   ];
   const events: LedgerEvent[] = parcels
     .flatMap((p) => [
@@ -131,7 +151,14 @@ export class SimRegistry implements Registry {
     return structuredClone(this.state);
   }
 
-  async register(name: string, polygon: LatLng[], cells: bigint[]): Promise<Parcel> {
+  async register(
+    name: string,
+    polygon: LatLng[],
+    cells: bigint[],
+    community?: { name: string; address?: string; bps: number }
+  ): Promise<Parcel> {
+    if (community && (community.bps <= 0 || community.bps > 10_000 || !community.name.trim()))
+      throw new RegistryError("OTHER", "A community share needs a name and a share between 0.01% and 100%.");
     if (cells.length === 0) throw new RegistryError("NO_CELLS", "The polygon is too small to contain a single cell.");
     if (cells.length > MAX_CELLS_PER_PARCEL)
       throw new RegistryError("TOO_MANY_CELLS", `A parcel is limited to ${MAX_CELLS_PER_PARCEL} cells.`);
@@ -170,6 +197,7 @@ export class SimRegistry implements Registry {
       revoked: 0,
       retired: 0,
       holdings: 0,
+      community: community ? { name: community.name.trim(), bps: community.bps, holdings: 0 } : undefined,
     };
     this.state.parcels.push(parcel);
     this.push("ParcelRegistered", `Parcel #${id} registered`, id, `${name} · ${cells.length} cells`);
@@ -177,37 +205,46 @@ export class SimRegistry implements Registry {
     return structuredClone(parcel);
   }
 
-  async verify(parcelId: number): Promise<MrvReport> {
+  async verify(parcelId: number, opts?: { asOf?: string }): Promise<MrvReport> {
     const p = this.parcel(parcelId);
     if (p.status !== "active") throw new RegistryError("NOT_ACTIVE", "Parcel is frozen.");
-    const report = await fetchMrv(p);
+    const report = await fetchMrv(p, false, opts?.asOf);
     // Only issue what is not already outstanding: the report states the supportable total.
     const ceiling = p.cells.length * MAX_CREDITS_PER_CELL;
     const outstanding = p.issued - p.revoked;
     const amount = Math.min(Math.max(0, report.credits - outstanding), ceiling - outstanding);
     p.lastReport = report;
     if (amount > 0) {
+      const toCommunity = p.community ? Math.floor((amount * p.community.bps) / 10_000) : 0;
       p.issued += amount;
-      p.holdings += amount;
-      this.push("CreditsIssued", `${amount} credits issued`, parcelId, `Evidence ${report.hash.slice(0, 14)}…`);
+      p.holdings += amount - toCommunity;
+      if (p.community) p.community.holdings += toCommunity;
+      this.push(
+        "CreditsIssued",
+        `${amount} credits issued`,
+        parcelId,
+        `Evidence ${report.hash.slice(0, 14)}… · ${quorumNote}${toCommunity ? ` · ${toCommunity} to ${p.community!.name}` : ""}`
+      );
     }
     this.write();
     return report;
   }
 
-  async monitor(parcelId: number, opts?: { simulateLoss?: boolean }) {
+  async monitor(parcelId: number, opts?: { simulateLoss?: boolean; asOf?: string }) {
     const p = this.parcel(parcelId);
     if (p.status !== "active") throw new RegistryError("NOT_ACTIVE", "Parcel is already flagged.");
-    const report = await fetchMrv(p, !!opts?.simulateLoss);
+    const report = await fetchMrv(p, !!opts?.simulateLoss, opts?.asOf);
     p.lastReport = report;
-    const flagged = report.dropPct >= FLAG_DROP_PCT;
+    const flagged = report.flag ?? report.dropPct >= FLAG_DROP_PCT;
     if (flagged) {
       p.status = "flagged";
       this.push(
         "ParcelFlagged",
         "Credits frozen",
         parcelId,
-        `NDVI dropped ${report.dropPct.toFixed(0)}% below the trailing average${report.simulated ? " (simulated event)" : ""}`
+        `NDVI dropped ${report.dropPct.toFixed(0)}% ${report.method === "same-season" ? "vs the same season last year" : "below the trailing average"}${
+          report.simulated ? " (simulated event)" : opts?.asOf ? ` (historical replay as of ${opts.asOf})` : ""
+        }`
       );
     }
     this.write();
@@ -217,15 +254,16 @@ export class SimRegistry implements Registry {
   async revoke(parcelId: number): Promise<void> {
     const p = this.parcel(parcelId);
     if (p.status !== "flagged") throw new RegistryError("NOT_FLAGGED", "Only flagged parcels can be revoked.");
-    const n = p.holdings;
+    const n = p.holdings + (p.community?.holdings ?? 0);
     if (n <= 0) throw new RegistryError("INSUFFICIENT", "No credits left to revoke.");
     p.revoked += n;
     p.holdings = 0;
+    if (p.community) p.community.holdings = 0;
     this.push(
       "CreditsRevoked",
       `${n} credits revoked`,
       parcelId,
-      p.lastReport ? `Evidence ${p.lastReport.hash.slice(0, 14)}…` : undefined
+      `${p.lastReport ? `Evidence ${p.lastReport.hash.slice(0, 14)}… · ` : ""}${quorumNote}${p.community ? " · owner and community burned" : ""}`
     );
     this.write();
   }
@@ -234,7 +272,7 @@ export class SimRegistry implements Registry {
     const p = this.parcel(parcelId);
     if (p.status !== "flagged") throw new RegistryError("NOT_FLAGGED", "Parcel is not flagged.");
     p.status = "active";
-    this.push("FlagCleared", "Flag cleared", parcelId, "Vegetation back to normal");
+    this.push("FlagCleared", "Flag cleared", parcelId, `Vegetation back to normal · ${quorumNote}`);
     this.write();
   }
 

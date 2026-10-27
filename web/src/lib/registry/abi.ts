@@ -6,6 +6,10 @@ export const TERRAPROOF_ABI = [
   "function clearFlag(uint256 parcelId, bytes32 evidence)",
   "function revokeCredits(uint256 parcelId, address holder, uint256 amount, bytes32 evidence)",
   "function retire(uint256 parcelId, uint256 amount, string beneficiary, string reason) returns (uint256 retirementId)",
+  "function registerParcelWithCommunity(uint64[] cells, string metadataURI, address community, uint16 shareBps) returns (uint256 parcelId)",
+  "function threshold() view returns (uint256)",
+  "function communityOf(uint256 parcelId) view returns (address)",
+  "function communityShareBps(uint256 parcelId) view returns (uint16)",
   "function parcelCount() view returns (uint256)",
   "function maxCreditsPerCell() view returns (uint256)",
   "function balanceOf(address account, uint256 id) view returns (uint256)",
@@ -15,6 +19,8 @@ export const TERRAPROOF_ABI = [
   "event ParcelFlagged(uint256 indexed parcelId, bytes32 evidence, string reason)",
   "event FlagCleared(uint256 indexed parcelId, bytes32 evidence)",
   "event CreditsRevoked(uint256 indexed parcelId, address indexed holder, uint256 amount, bytes32 evidence)",
+  "event CommunityShareSet(uint256 indexed parcelId, address indexed community, uint16 shareBps)",
+  "event ActionApproved(bytes32 indexed actionKey, address indexed verifier, uint256 approvals, uint256 threshold)",
   "event CreditsRetired(uint256 indexed retirementId, uint256 indexed parcelId, address indexed retiree, uint256 amount, string beneficiary, string reason)",
   "error CellAlreadyClaimed(uint64 cell, uint256 parcelId)",
   "error NoCells()",
@@ -25,6 +31,10 @@ export const TERRAPROOF_ABI = [
   "error ParcelFrozen(uint256 parcelId)",
   "error ExceedsCeiling(uint256 requested, uint256 allowed)",
   "error ZeroAmount()",
+  "error AlreadyApproved(bytes32 actionKey)",
+  "error InvalidThreshold(uint256 value)",
+  "error InvalidCommunity()",
+  "error EnforcedPause()",
 ] as const;
 
 export const STATUS_BY_INDEX = ["none", "active", "flagged"] as const;
@@ -46,13 +56,13 @@ export function decodeDataUri<T>(uri: string): T | null {
 }
 
 /** Parcel metadata stored in `metadataURI` as a base64 data URI (no IPFS dependency for the demo). */
-export function encodeMetadata(meta: { name: string; polygon: [number, number][] }): string {
+export function encodeMetadata(meta: { name: string; polygon: [number, number][]; community?: string }): string {
   const json = JSON.stringify(meta);
   const b64 = typeof window === "undefined" ? Buffer.from(json).toString("base64") : btoa(unescape(encodeURIComponent(json)));
   return `data:application/json;base64,${b64}`;
 }
 
-export function decodeMetadata(uri: string): { name: string; polygon: [number, number][] } | null {
+export function decodeMetadata(uri: string): { name: string; polygon: [number, number][]; community?: string } | null {
   try {
     const b64 = uri.split(",")[1];
     const json = typeof window === "undefined" ? Buffer.from(b64, "base64").toString("utf8") : decodeURIComponent(escape(atob(b64)));

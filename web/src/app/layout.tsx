@@ -3,6 +3,7 @@ import { DM_Mono, Hanken_Grotesk, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import { RegistryProvider } from "@/lib/registry/context";
 import { Toasts } from "@/components/ui";
+import { LocaleProvider } from "@/lib/i18n";
 
 const sans = Hanken_Grotesk({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
 const display = Instrument_Serif({ subsets: ["latin"], weight: "400", style: ["normal", "italic"], variable: "--font-display", display: "swap" });
@@ -29,10 +30,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${sans.variable} ${display.variable} ${mono.variable}`}>
       <body className="paper min-h-screen font-sans">
-        <RegistryProvider>
-          {children}
-          <Toasts />
-        </RegistryProvider>
+        <LocaleProvider>
+          <RegistryProvider>
+            {children}
+            <Toasts />
+          </RegistryProvider>
+        </LocaleProvider>
       </body>
     </html>
   );

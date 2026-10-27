@@ -2,7 +2,8 @@
 pragma solidity ^0.8.24;
 
 import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import {AccessControlEnumerable} from "@openzeppelin/contracts/access/extensions/AccessControlEnumerable.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 
 /// @title TerraProof
 /// @notice Carbon credit registry with built-in double-counting protection and
@@ -10,15 +11,18 @@ import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 ///
 ///  - Every parcel is rasterised off-chain into geohash cells (precision 8, ~38m x 19m).
 ///    A cell can belong to at most ONE parcel, ever: overlapping registrations revert.
-///  - A VERIFIER (the MRV oracle that reads satellite data) issues credits per parcel.
-///    Credits are an ERC-1155 token whose id is the parcel id.
-///  - If continuous monitoring detects loss of vegetation, the verifier flags the
-///    parcel (credits are frozen) and may then revoke credits (burn) or clear the flag.
+///  - VERIFIERs (independent MRV oracles that read satellite data) approve actions.
+///    Issuing credits, revoking credits and clearing a flag need `threshold` DISTINCT
+///    verifiers to approve the very same action. Freezing a parcel needs only ONE verifier:
+///    the safe direction is always fast, the irreversible one is always collective.
+///  - Credits are an ERC-1155 token whose id is the parcel id. A parcel may reserve a
+///    share of every issuance for its community, enforced here, not by a side agreement.
 ///  - Buyers retire credits on-chain; each retirement is a permanent public record.
-contract TerraProof is ERC1155, AccessControl {
+contract TerraProof is ERC1155, AccessControlEnumerable, Pausable {
     bytes32 public constant VERIFIER_ROLE = keccak256("VERIFIER_ROLE");
 
     uint256 public constant MAX_CELLS_PER_PARCEL = 256;
+    uint16 public constant BPS = 10_000;
 
     enum Status {
         None,
@@ -50,14 +54,29 @@ contract TerraProof is ERC1155, AccessControl {
     /// @notice Hard ceiling on credits per cell and per issuance, limits oracle damage.
     uint256 public maxCreditsPerCell;
 
+    /// @notice How many distinct verifiers must approve an issuance / revocation / unfreeze.
+    uint256 public threshold = 1;
+
     uint256 public parcelCount;
     mapping(uint256 => Parcel) private _parcels;
     /// @dev geohash cell => parcelId that claimed it (0 = free)
     mapping(uint64 => uint256) public cellParcel;
 
+    /// @notice Community wallet and share (basis points) reserved on every issuance of a parcel.
+    mapping(uint256 => address) public communityOf;
+    mapping(uint256 => uint16) public communityShareBps;
+
+    /// @dev Number of times a parcel has been flagged or cleared; makes unfreeze votes single-use.
+    mapping(uint256 => uint256) public flagEpoch;
+
+    /// @dev action key => approvals so far / who already approved.
+    mapping(bytes32 => uint256) public approvals;
+    mapping(bytes32 => mapping(address => bool)) public hasApproved;
+
     Retirement[] private _retirements;
 
     event ParcelRegistered(uint256 indexed parcelId, address indexed owner, uint32 cellCount, string metadataURI);
+    event CommunityShareSet(uint256 indexed parcelId, address indexed community, uint16 shareBps);
     event CreditsIssued(uint256 indexed parcelId, address indexed to, uint256 amount, bytes32 evidence, string evidenceURI);
     event ParcelFlagged(uint256 indexed parcelId, bytes32 evidence, string reason);
     event FlagCleared(uint256 indexed parcelId, bytes32 evidence);
@@ -71,6 +90,8 @@ contract TerraProof is ERC1155, AccessControl {
         string reason
     );
     event MaxCreditsPerCellUpdated(uint256 value);
+    event ThresholdUpdated(uint256 value);
+    event ActionApproved(bytes32 indexed actionKey, address indexed verifier, uint256 approvals, uint256 threshold);
 
     error NoCells();
     error TooManyCells();
@@ -81,6 +102,9 @@ contract TerraProof is ERC1155, AccessControl {
     error ParcelFrozen(uint256 parcelId);
     error ExceedsCeiling(uint256 requested, uint256 allowed);
     error ZeroAmount();
+    error AlreadyApproved(bytes32 actionKey);
+    error InvalidThreshold(uint256 value);
+    error InvalidCommunity();
 
     constructor(address admin, address verifier, uint256 maxCreditsPerCell_) ERC1155("") {
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
@@ -96,14 +120,54 @@ contract TerraProof is ERC1155, AccessControl {
         emit MaxCreditsPerCellUpdated(value);
     }
 
+    /// @notice Set how many distinct verifiers must agree. Cannot exceed the number of verifiers,
+    ///         otherwise the registry would lock itself.
+    function setThreshold(uint256 value) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (value == 0 || value > getRoleMemberCount(VERIFIER_ROLE)) revert InvalidThreshold(value);
+        threshold = value;
+        emit ThresholdUpdated(value);
+    }
+
+    /// @notice Emergency stop for registration, issuance, retirement and transfers.
+    ///         Freezing and revoking stay available so a pause can never shield a bad actor.
+    function pause() external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _pause();
+    }
+
+    function unpause() external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _unpause();
+    }
+
     // --------------------------------------------------------------- register
 
     /// @notice Register a parcel as a set of geohash cells. Reverts if ANY cell is
     ///         already claimed by another parcel (double-counting protection).
     function registerParcel(uint64[] calldata cells, string calldata metadataURI)
         external
+        whenNotPaused
         returns (uint256 parcelId)
     {
+        parcelId = _register(cells, metadataURI);
+    }
+
+    /// @notice Same as `registerParcel`, and reserves `shareBps` of every future issuance
+    ///         for `community` (a village cooperative, a landowners' trust...).
+    function registerParcelWithCommunity(
+        uint64[] calldata cells,
+        string calldata metadataURI,
+        address community,
+        uint16 shareBps
+    ) external whenNotPaused returns (uint256 parcelId) {
+        if (community == address(0) || community == msg.sender || shareBps == 0 || shareBps > BPS) {
+            revert InvalidCommunity();
+        }
+        parcelId = _register(cells, metadataURI);
+        communityOf[parcelId] = community;
+        communityShareBps[parcelId] = shareBps;
+        emit CommunityShareSet(parcelId, community, shareBps);
+    }
+
+    function _register(uint64[] calldata cells, string calldata metadataURI) private returns (uint256 parcelId) {
         if (cells.length == 0) revert NoCells();
         if (cells.length > MAX_CELLS_PER_PARCEL) revert TooManyCells();
 
@@ -127,10 +191,12 @@ contract TerraProof is ERC1155, AccessControl {
 
     // ------------------------------------------------------------------ issue
 
-    /// @notice Issue credits to the parcel owner, backed by an MRV report.
+    /// @notice Approve the issuance of credits backed by an MRV report. Credits are minted
+    ///         once `threshold` distinct verifiers approved the same (parcel, amount, evidence).
     function issueCredits(uint256 parcelId, uint256 amount, bytes32 evidence, string calldata evidenceURI)
         external
         onlyRole(VERIFIER_ROLE)
+        whenNotPaused
     {
         Parcel storage p = _requireParcel(parcelId);
         if (p.status != Status.Active) revert ParcelNotActive(parcelId);
@@ -140,9 +206,15 @@ contract TerraProof is ERC1155, AccessControl {
         uint256 outstanding = p.issued - p.revoked;
         if (outstanding + amount > ceiling) revert ExceedsCeiling(outstanding + amount, ceiling);
 
+        // `p.issued` acts as a nonce: once credits are minted the same vote cannot be replayed.
+        if (!_approve(keccak256(abi.encode("ISSUE", parcelId, amount, evidence, p.issued)))) return;
+
         p.issued += amount;
         p.lastEvidence = evidence;
-        _mint(p.owner, parcelId, amount, "");
+
+        uint256 toCommunity = (amount * communityShareBps[parcelId]) / BPS;
+        if (toCommunity > 0) _mint(communityOf[parcelId], parcelId, toCommunity, "");
+        _mint(p.owner, parcelId, amount - toCommunity, "");
 
         emit CreditsIssued(parcelId, p.owner, amount, evidence, evidenceURI);
     }
@@ -150,6 +222,7 @@ contract TerraProof is ERC1155, AccessControl {
     // ------------------------------------------------------------ living credits
 
     /// @notice Freeze a parcel's credits when monitoring detects vegetation loss.
+    ///         ONE verifier is enough: freezing is reversible and always the safe direction.
     function flagParcel(uint256 parcelId, bytes32 evidence, string calldata reason)
         external
         onlyRole(VERIFIER_ROLE)
@@ -158,19 +231,24 @@ contract TerraProof is ERC1155, AccessControl {
         if (p.status != Status.Active) revert ParcelNotActive(parcelId);
         p.status = Status.Flagged;
         p.lastEvidence = evidence;
+        flagEpoch[parcelId]++;
         emit ParcelFlagged(parcelId, evidence, reason);
     }
 
-    /// @notice Lift a flag after a false alarm or recovery.
+    /// @notice Lift a flag after a false alarm or recovery. Needs the verifier quorum.
     function clearFlag(uint256 parcelId, bytes32 evidence) external onlyRole(VERIFIER_ROLE) {
         Parcel storage p = _requireParcel(parcelId);
         if (p.status != Status.Flagged) revert ParcelNotFlagged(parcelId);
+
+        if (!_approve(keccak256(abi.encode("CLEAR", parcelId, evidence, flagEpoch[parcelId])))) return;
+
         p.status = Status.Active;
         p.lastEvidence = evidence;
+        flagEpoch[parcelId]++;
         emit FlagCleared(parcelId, evidence);
     }
 
-    /// @notice Burn credits from a holder of a flagged parcel (confirmed loss).
+    /// @notice Burn credits from a holder of a flagged parcel (confirmed loss). Needs the quorum.
     ///         Because a flagged parcel is frozen, holders cannot move credits away
     ///         between the flag and the revocation.
     function revokeCredits(uint256 parcelId, address holder, uint256 amount, bytes32 evidence)
@@ -180,6 +258,8 @@ contract TerraProof is ERC1155, AccessControl {
         Parcel storage p = _requireParcel(parcelId);
         if (p.status != Status.Flagged) revert ParcelNotFlagged(parcelId);
         if (amount == 0) revert ZeroAmount();
+
+        if (!_approve(keccak256(abi.encode("REVOKE", parcelId, holder, amount, evidence, p.revoked)))) return;
 
         p.revoked += amount;
         p.lastEvidence = evidence;
@@ -193,6 +273,7 @@ contract TerraProof is ERC1155, AccessControl {
     /// @notice Permanently retire credits you hold. Leaves a public on-chain record.
     function retire(uint256 parcelId, uint256 amount, string calldata beneficiary, string calldata reason)
         external
+        whenNotPaused
         returns (uint256 retirementId)
     {
         Parcel storage p = _requireParcel(parcelId);
@@ -242,17 +323,27 @@ contract TerraProof is ERC1155, AccessControl {
 
     // --------------------------------------------------------------- internals
 
+    /// @dev Records `msg.sender`'s approval of `key`. Returns true once the quorum is reached.
+    function _approve(bytes32 key) private returns (bool reached) {
+        if (hasApproved[key][msg.sender]) revert AlreadyApproved(key);
+        hasApproved[key][msg.sender] = true;
+        uint256 n = ++approvals[key];
+        emit ActionApproved(key, msg.sender, n, threshold);
+        reached = n >= threshold;
+    }
+
     function _requireParcel(uint256 parcelId) private view returns (Parcel storage p) {
         p = _parcels[parcelId];
         if (p.status == Status.None) revert UnknownParcel(parcelId);
     }
 
-    /// @dev Block transfers (not mint/burn) of credits from a flagged parcel.
+    /// @dev Block transfers (not mint/burn) of credits from a flagged parcel or while paused.
     function _update(address from, address to, uint256[] memory ids, uint256[] memory values)
         internal
         override
     {
         if (from != address(0) && to != address(0)) {
+            _requireNotPaused();
             for (uint256 i = 0; i < ids.length; i++) {
                 if (_parcels[ids[i]].status == Status.Flagged) revert ParcelFrozen(ids[i]);
             }
@@ -260,7 +351,12 @@ contract TerraProof is ERC1155, AccessControl {
         super._update(from, to, ids, values);
     }
 
-    function supportsInterface(bytes4 interfaceId) public view override(ERC1155, AccessControl) returns (bool) {
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(ERC1155, AccessControlEnumerable)
+        returns (bool)
+    {
         return super.supportsInterface(interfaceId);
     }
 }

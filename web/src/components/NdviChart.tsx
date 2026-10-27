@@ -26,7 +26,8 @@ export function NdviChart({ report, height = 120 }: Props) {
   const H = height;
   const pad = { l: 28, r: 10, t: 12, b: 20 };
   const s = report.series;
-  const min = Math.min(0.1, ...s.map((o) => o.ndvi)) - 0.05;
+  const hasNdmi = s.every((o) => typeof o.ndmi === "number");
+  const min = Math.min(0.1, ...s.map((o) => o.ndvi), ...(hasNdmi ? s.map((o) => o.ndmi as number) : [])) - 0.05;
   const max = Math.max(0.7, ...s.map((o) => o.ndvi)) + 0.03;
   const x = (i: number) => pad.l + (i / (s.length - 1)) * (W - pad.l - pad.r);
   const y = (v: number) => pad.t + (1 - (v - min) / (max - min)) * (H - pad.t - pad.b);
@@ -48,7 +49,7 @@ export function NdviChart({ report, height = 120 }: Props) {
     })
     .join(" ");
   const last = pts[pts.length - 1];
-  const bad = report.dropPct >= 30;
+  const bad = report.flag ?? report.dropPct >= 30;
   const color = bad ? "rgb(var(--danger))" : "rgb(var(--brand))";
   const ticks = [0.2, 0.4, 0.6].filter((t) => t > min && t < max);
   const fmt = (d: string) => new Date(d).toLocaleDateString("en", { month: "short", year: "2-digit" });
@@ -70,6 +71,15 @@ export function NdviChart({ report, height = 120 }: Props) {
         </g>
       ))}
       <path d={`${path} L ${last[0]} ${H - pad.b} L ${pts[0][0]} ${H - pad.b} Z`} fill={`url(#${gid})`} />
+      {hasNdmi && (
+        <polyline
+          points={s.map((o, i) => `${x(i)},${y(o.ndmi as number)}`).join(" ")}
+          fill="none"
+          stroke="rgb(var(--mute))"
+          strokeWidth="1.4"
+          strokeDasharray="3 3"
+        />
+      )}
       <path d={path} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" />
       {pts.map((p, i) => (
         <circle key={i} cx={p[0]} cy={p[1]} r={i === pts.length - 1 ? 4.5 : 2.5} fill="rgb(var(--bg))" stroke={color} strokeWidth="1.8" />
@@ -77,6 +87,11 @@ export function NdviChart({ report, height = 120 }: Props) {
       <text x={pts[0][0]} y={H - 5} fontSize="9" fill="rgb(var(--mute))" textAnchor="start">
         {fmt(s[0].date)}
       </text>
+      {hasNdmi && (
+        <text x={W - pad.r} y={pad.t - 2} fontSize="9" fill="rgb(var(--mute))" textAnchor="end">
+          ── NDVI · - - NDMI (moisture)
+        </text>
+      )}
       <text x={last[0]} y={H - 5} fontSize="9" fill="rgb(var(--mute))" textAnchor="end">
         {report.simulated ? "simulated" : fmt(s[s.length - 1].date)}
       </text>

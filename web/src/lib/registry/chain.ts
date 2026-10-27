@@ -24,6 +24,8 @@ declare global {
 }
 
 const iface = new Interface(TERRAPROOF_ABI);
+const ZERO = "0x0000000000000000000000000000000000000000";
+const shortAddress = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
 
 function decodeRevert(e: unknown): RegistryError {
   const data = (e as { data?: string; info?: { error?: { data?: string } } })?.data ??
@@ -134,6 +136,20 @@ export class ChainRegistry implements Registry {
         const polygon = (meta?.polygon ?? []) as LatLng[];
         const cells = polygonToCells(polygon);
         const holdings = Number(await c.balanceOf(p.owner, id));
+        let community: Parcel["community"];
+        try {
+          const addr: string = await c.communityOf(id);
+          if (addr && addr !== ZERO) {
+            community = {
+              name: meta?.community ?? shortAddress(addr),
+              address: addr,
+              bps: Number(await c.communityShareBps(id)),
+              holdings: Number(await c.balanceOf(addr, id)),
+            };
+          }
+        } catch {
+          /* contract deployed before the community share existed */
+        }
         return {
           id,
           name: meta?.name ?? `Parcel #${id}`,
@@ -147,6 +163,7 @@ export class ChainRegistry implements Registry {
           revoked: Number(p.revoked),
           retired: Number(p.retired),
           holdings,
+          community,
         };
       })
     );
@@ -279,19 +296,33 @@ export class ChainRegistry implements Registry {
     return { events, retirements, reports, latestIssued };
   }
 
-  async register(name: string, polygon: LatLng[], cells: bigint[]): Promise<Parcel> {
+  async register(
+    name: string,
+    polygon: LatLng[],
+    cells: bigint[],
+    community?: { name: string; address?: string; bps: number }
+  ): Promise<Parcel> {
     this.requireSigner();
-    const uri = encodeMetadata({ name, polygon });
+    const useCommunity = !!community?.address && /^0x[0-9a-fA-F]{40}$/.test(community.address);
+    if (community && !useCommunity) {
+      throw new RegistryError("OTHER", "On-chain mode needs the community wallet address (0x…) to enforce its share.");
+    }
+    const uri = encodeMetadata({ name, polygon, community: community?.name });
+    const send = (fn: "staticCall" | "send") => {
+      const m = useCommunity ? this.contract.registerParcelWithCommunity : this.contract.registerParcel;
+      const args = useCommunity ? [cells, uri, community!.address, community!.bps] : [cells, uri];
+      return fn === "staticCall" ? m.staticCall(...args) : m(...args);
+    };
     try {
       // Dry-run first: a double-counting attempt reverts here and never costs gas.
-      await this.contract.registerParcel.staticCall(cells, uri);
+      await send("staticCall");
     } catch (e) {
       const err = decodeRevert(e);
       if (err.code === "CELL_CLAIMED") this.pushRejected(err.conflictParcelId ?? 0, err.message);
       throw err;
     }
     try {
-      const tx = await this.contract.registerParcel(cells, uri);
+      const tx = await send("send");
       await tx.wait();
     } catch (e) {
       throw decodeRevert(e);
@@ -311,13 +342,13 @@ export class ChainRegistry implements Registry {
     return json as T;
   }
 
-  async verify(parcelId: number): Promise<MrvReport> {
+  async verify(parcelId: number, _opts?: { asOf?: string }): Promise<MrvReport> {
     const { report } = await this.oracle<{ report: MrvReport }>("verify", parcelId);
     this.cacheReport(report, parcelId);
     return report;
   }
 
-  async monitor(parcelId: number, opts?: { simulateLoss?: boolean }) {
+  async monitor(parcelId: number, opts?: { simulateLoss?: boolean; asOf?: string }) {
     const out = await this.oracle<{ report: MrvReport; flagged: boolean }>("monitor", parcelId, { simulateLoss: !!opts?.simulateLoss });
     this.cacheReport(out.report, parcelId);
     return out;

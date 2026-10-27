@@ -1,0 +1,1202 @@
+{
+  "calibrated": {
+    "ndviMin": 0.25,
+    "ndmiMin": 0.08,
+    "maxCloudPct": 25,
+    "minObservations": 2,
+    "ndmiDropCorroboration": 20,
+    "ndmiDropAlone": 30
+  },
+  "rows": [
+    {
+      "site": {
+        "id": "intact-10S_060W-462-24546",
+        "label": "intact",
+        "tile": "10S_060W",
+        "region": "Amazon basin (Mato Grosso, Rondonia, Para)",
+        "polygon": [
+          [
+            -16.139999999999997,
+            -59.8845
+          ],
+          [
+            -16.136499999999998,
+            -59.8845
+          ],
+          [
+            -16.136499999999998,
+            -59.881
+          ],
+          [
+            -16.139999999999997,
+            -59.881
+          ]
+        ],
+        "centre": [
+          -16.13825,
+          -59.88275
+        ],
+        "areaHa": 14.6,
+        "treeCover2000": 79
+      },
+      "split": "calibration",
+      "asOf": "2022-12-31",
+      "n": 12,
+      "v1Gate": "eligible",
+      "v1Flag": false,
+      "v0Gate": "eligible",
+      "v0Flag": false,
+      "latestNdvi": 0.724,
+      "latestNdmi": 0.162,
+      "drop": 0
+    },
+    {
+      "site": {
+        "id": "intact-10S_060W-798-24546",
+        "label": "intact",
+        "tile": "10S_060W",
+        "region": "Amazon basin (Mato Grosso, Rondonia, Para)",
+        "polygon": [
+          [
+            -16.139999999999997,
+            -59.8005
+          ],
+          [
+            -16.136499999999998,
+            -59.8005
+          ],
+          [
+            -16.136499999999998,
+            -59.797
+          ],
+          [
+            -16.139999999999997,
+            -59.797
+          ]
+        ],
+        "centre": [
+          -16.13825,
+          -59.79875
+        ],
+        "areaHa": 14.6,
+        "treeCover2000": 73
+      },
+      "split": "test",
+      "asOf": "2023-12-31",
+      "n": 10,
+      "v1Gate": "eligible",
+      "v1Flag": false,
+      "v0Gate": "eligible",
+      "v0Flag": false,
+      "latestNdvi": 0.827,
+      "latestNdmi": 0.284,
+      "drop": 0
+    },
+    {
+      "site": {
+        "id": "intact-10S_060W-224-425",
+        "label": "intact",
+        "tile": "10S_060W",
+        "region": "Amazon basin (Mato Grosso, Rondonia, Para)",
+        "polygon": [
+          [
+            -10.10975,
+            -59.944
+          ],
+          [
+            -10.10625,
+            -59.944
+          ],
+          [
+            -10.10625,
+            -59.9405
+          ],
+          [
+            -10.10975,
+            -59.9405
+          ]
+        ],
+        "centre": [
+          -10.108,
+          -59.94225
+        ],
+        "areaHa": 14.9,
+        "treeCover2000": 100
+      },
+      "split": "calibration",
+      "asOf": "2022-12-31",
+      "n": 10,
+      "v1Gate": "eligible",
+      "v1Flag": false,
+      "v0Gate": "eligible",
+      "v0Flag": false,
+      "latestNdvi": 0.863,
+      "latestNdmi": 0.349,
+      "drop": 0.461
+    },
+    {
+      "site": {
+        "id": "intact-10S_060W-840-425",
+        "label": "intact",
+        "tile": "10S_060W",
+        "region": "Amazon basin (Mato Grosso, Rondonia, Para)",
+        "polygon": [
+          [
+            -10.10975,
+            -59.79
+          ],
+          [
+            -10.10625,
+            -59.79
+          ],
+          [
+            -10.10625,
+            -59.7865
+          ],
+          [
+            -10.10975,
+            -59.7865
+          ]
+        ],
+        "centre": [
+          -10.108,
+          -59.78825
+        ],
+        "areaHa": 14.9,
+        "treeCover2000": 100
+      },
+      "split": "test",
+      "asOf": "2023-12-31",
+      "n": 12,
+      "v1Gate": "eligible",
+      "v1Flag": false,
+      "v0Gate": "eligible",
+      "v0Flag": false,
+      "latestNdvi": 0.764,
+      "latestNdmi": 0.271,
+      "drop": 10.852
+    },
+    {
+      "site": {
+        "id": "intact-10S_060W-1225-425",
+        "label": "intact",
+        "tile": "10S_060W",
+        "region": "Amazon basin (Mato Grosso, Rondonia, Para)",
+        "polygon": [
+          [
+            -10.10975,
+            -59.69375
+          ],
+          [
+            -10.10625,
+            -59.69375
+          ],
+          [
+            -10.10625,
+            -59.69025
+          ],
+          [
+            -10.10975,
+            -59.69025
+          ]
+        ],
+        "centre": [
+          -10.108,
+          -59.692
+        ],
+        "areaHa": 14.9,
+        "treeCover2000": 100
+      },
+      "split": "calibration",
+      "asOf": "2022-12-31",
+      "n": 10,
+      "v1Gate": "eligible",
+      "v1Flag": false,
+      "v0Gate": "eligible",
+      "v0Flag": false,
+      "latestNdvi": 0.854,
+      "latestNdmi": 0.338,
+      "drop": 0
+    },
+    {
+      "site": {
+        "id": "intact-10S_060W-987-9640",
+        "label": "intact",
+        "tile": "10S_060W",
+        "region": "Amazon basin (Mato Grosso, Rondonia, Para)",
+        "polygon": [
+          [
+            -12.4135,
+            -59.75325
+          ],
+          [
+            -12.41,
+            -59.75325
+          ],
+          [
+            -12.41,
+            -59.74975
+          ],
+          [
+            -12.4135,
+            -59.74975
+          ]
+        ],
+        "centre": [
+          -12.411750000000001,
+          -59.7515
+        ],
+        "areaHa": 14.8,
+        "treeCover2000": 95
+      },
+      "split": "test",
+      "asOf": "2023-12-31",
+      "n": 7,
+      "v1Gate": "eligible",
+      "v1Flag": false,
+      "v0Gate": "eligible",
+      "v0Flag": false,
+      "latestNdvi": 0.849,
+      "latestNdmi": 0.294,
+      "drop": 0
+    },
+    {
+      "site": {
+        "id": "intact-10S_060W-2037-9640",
+        "label": "intact",
+        "tile": "10S_060W",
+        "region": "Amazon basin (Mato Grosso, Rondonia, Para)",
+        "polygon": [
+          [
+            -12.4135,
+            -59.49075
+          ],
+          [
+            -12.41,
+            -59.49075
+          ],
+          [
+            -12.41,
+            -59.487249999999996
+          ],
+          [
+            -12.4135,
+            -59.487249999999996
+          ]
+        ],
+        "centre": [
+          -12.411750000000001,
+          -59.489
+        ],
+        "areaHa": 14.8,
+        "treeCover2000": 82
+      },
+      "split": "calibration",
+      "asOf": "2022-12-31",
+      "n": 9,
+      "v1Gate": "eligible",
+      "v1Flag": false,
+      "v0Gate": "eligible",
+      "v0Flag": false,
+      "latestNdvi": 0.794,
+      "latestNdmi": 0.244,
+      "drop": 0
+    },
+    {
+      "site": {
+        "id": "intact-10S_060W-35-7242",
+        "label": "intact",
+        "tile": "10S_060W",
+        "region": "Amazon basin (Mato Grosso, Rondonia, Para)",
+        "polygon": [
+          [
+            -11.814,
+            -59.99125
+          ],
+          [
+            -11.8105,
+            -59.99125
+          ],
+          [
+            -11.8105,
+            -59.98775
+          ],
+          [
+            -11.814,
+            -59.98775
+          ]
+        ],
+        "centre": [
+          -11.812249999999999,
+          -59.9895
+        ],
+        "areaHa": 14.9,
+        "treeCover2000": 100
+      },
+      "split": "test",
+      "asOf": "2023-12-31",
+      "n": 10,
+      "v1Gate": "eligible",
+      "v1Flag": false,
+      "v0Gate": "eligible",
+      "v0Flag": false,
+      "latestNdvi": 0.826,
+      "latestNdmi": 0.341,
+      "drop": 3.052
+    },
+    {
+      "site": {
+        "id": "intact-10S_060W-182-7242",
+        "label": "intact",
+        "tile": "10S_060W",
+        "region": "Amazon basin (Mato Grosso, Rondonia, Para)",
+        "polygon": [
+          [
+            -11.814,
+            -59.9545
+          ],
+          [
+            -11.8105,
+            -59.9545
+          ],
+          [
+            -11.8105,
+            -59.951
+          ],
+          [
+            -11.814,
+            -59.951
+          ]
+        ],
+        "centre": [
+          -11.812249999999999,
+          -59.95275
+        ],
+        "areaHa": 14.9,
+        "treeCover2000": 100
+      },
+      "split": "calibration",
+      "asOf": "2022-12-31",
+      "n": 10,
+      "v1Gate": "eligible",
+      "v1Flag": false,
+      "v0Gate": "eligible",
+      "v0Flag": false,
+      "latestNdvi": 0.846,
+      "latestNdmi": 0.34,
+      "drop": 0.405
+    },
+    {
+      "site": {
+        "id": "intact-10S_060W-574-7242",
+        "label": "intact",
+        "tile": "10S_060W",
+        "region": "Amazon basin (Mato Grosso, Rondonia, Para)",
+        "polygon": [
+          [
+            -11.814,
+            -59.8565
+          ],
+          [
+            -11.8105,
+            -59.8565
+          ],
+          [
+            -11.8105,
+            -59.852999999999994
+          ],
+          [
+            -11.814,
+            -59.852999999999994
+          ]
+        ],
+        "centre": [
+          -11.812249999999999,
+          -59.854749999999996
+        ],
+        "areaHa": 14.9,
+        "treeCover2000": 100
+      },
+      "split": "test",
+      "asOf": "2023-12-31",
+      "n": 9,
+      "v1Gate": "eligible",
+      "v1Flag": false,
+      "v0Gate": "eligible",
+      "v0Flag": false,
+      "latestNdvi": 0.775,
+      "latestNdmi": 0.294,
+      "drop": 7.297
+    },
+    {
+      "site": {
+        "id": "intact-10S_060W-28-26901",
+        "label": "intact",
+        "tile": "10S_060W",
+        "region": "Amazon basin (Mato Grosso, Rondonia, Para)",
+        "polygon": [
+          [
+            -16.728749999999998,
+            -59.993
+          ],
+          [
+            -16.72525,
+            -59.993
+          ],
+          [
+            -16.72525,
+            -59.9895
+          ],
+          [
+            -16.728749999999998,
+            -59.9895
+          ]
+        ],
+        "centre": [
+          -16.726999999999997,
+          -59.99125
+        ],
+        "areaHa": 14.5,
+        "treeCover2000": 87
+      },
+      "split": "calibration",
+      "asOf": "2022-12-31",
+      "n": 10,
+      "v1Gate": "eligible",
+      "v1Flag": false,
+      "v0Gate": "eligible",
+      "v0Flag": false,
+      "latestNdvi": 0.75,
+      "latestNdmi": 0.168,
+      "drop": 0
+    },
+    {
+      "site": {
+        "id": "intact-10S_060W-70-3047",
+        "label": "intact",
+        "tile": "10S_060W",
+        "region": "Amazon basin (Mato Grosso, Rondonia, Para)",
+        "polygon": [
+          [
+            -10.76525,
+            -59.9825
+          ],
+          [
+            -10.76175,
+            -59.9825
+          ],
+          [
+            -10.76175,
+            -59.979
+          ],
+          [
+            -10.76525,
+            -59.979
+          ]
+        ],
+        "centre": [
+          -10.7635,
+          -59.98075
+        ],
+        "areaHa": 14.9,
+        "treeCover2000": 100
+      },
+      "split": "test",
+      "asOf": "2023-12-31",
+      "n": 11,
+      "v1Gate": "eligible",
+      "v1Flag": false,
+      "v0Gate": "eligible",
+      "v0Flag": false,
+      "latestNdvi": 0.873,
+      "latestNdmi": 0.333,
+      "drop": 2.458
+    },
+    {
+      "site": {
+        "id": "intact-10S_060W-448-3047",
+        "label": "intact",
+        "tile": "10S_060W",
+        "region": "Amazon basin (Mato Grosso, Rondonia, Para)",
+        "polygon": [
+          [
+            -10.76525,
+            -59.888
+          ],
+          [
+            -10.76175,
+            -59.888
+          ],
+          [
+            -10.76175,
+            -59.884499999999996
+          ],
+          [
+            -10.76525,
+            -59.884499999999996
+          ]
+        ],
+        "centre": [
+          -10.7635,
+          -59.88625
+        ],
+        "areaHa": 14.9,
+        "treeCover2000": 100
+      },
+      "split": "calibration",
+      "asOf": "2022-12-31",
+      "n": 13,
+      "v1Gate": "eligible",
+      "v1Flag": false,
+      "v0Gate": "eligible",
+      "v0Flag": false,
+      "latestNdvi": 0.843,
+      "latestNdmi": 0.359,
+      "drop": 0.296
+    },
+    {
+      "site": {
+        "id": "intact-10S_060W-1008-17452",
+        "label": "intact",
+        "tile": "10S_060W",
+        "region": "Amazon basin (Mato Grosso, Rondonia, Para)",
+        "polygon": [
+          [
+            -14.3665,
+            -59.748
+          ],
+          [
+            -14.363,
+            -59.748
+          ],
+          [
+            -14.363,
+            -59.744499999999995
+          ],
+          [
+            -14.3665,
+            -59.744499999999995
+          ]
+        ],
+        "centre": [
+          -14.36475,
+          -59.746249999999996
+        ],
+        "areaHa": 14.7,
+        "treeCover2000": 99
+      },
+      "split": "test",
+      "asOf": "2023-12-31",
+      "n": 11,
+      "v1Gate": "eligible",
+      "v1Flag": false,
+      "v0Gate": "eligible",
+      "v0Flag": false,
+      "latestNdvi": 0.88,
+      "latestNdmi": 0.358,
+      "drop": 0
+    },
+    {
+      "site": {
+        "id": "cleared-10S_060W-2058-34120",
+        "label": "cleared",
+        "lossYear": 2023,
+        "tile": "10S_060W",
+        "region": "Amazon basin (Mato Grosso, Rondonia, Para)",
+        "polygon": [
+          [
+            -18.5335,
+            -59.4855
+          ],
+          [
+            -18.53,
+            -59.4855
+          ],
+          [
+            -18.53,
+            -59.482
+          ],
+          [
+            -18.5335,
+            -59.482
+          ]
+        ],
+        "centre": [
+          -18.531750000000002,
+          -59.48375
+        ],
+        "areaHa": 14.4,
+        "treeCover2000": 99
+      },
+      "split": "calibration",
+      "asOf": "2023-12-31",
+      "n": 12,
+      "v1Gate": "not-eligible",
+      "v1Flag": true,
+      "v0Gate": "eligible",
+      "v0Flag": true,
+      "latestNdvi": 0.41,
+      "latestNdmi": -0.12,
+      "drop": 51.249
+    },
+    {
+      "site": {
+        "id": "cleared-10S_060W-56-29634",
+        "label": "cleared",
+        "lossYear": 2023,
+        "tile": "10S_060W",
+        "region": "Amazon basin (Mato Grosso, Rondonia, Para)",
+        "polygon": [
+          [
+            -17.412,
+            -59.986
+          ],
+          [
+            -17.4085,
+            -59.986
+          ],
+          [
+            -17.4085,
+            -59.982499999999995
+          ],
+          [
+            -17.412,
+            -59.982499999999995
+          ]
+        ],
+        "centre": [
+          -17.410249999999998,
+          -59.984249999999996
+        ],
+        "areaHa": 14.5,
+        "treeCover2000": 85
+      },
+      "split": "test",
+      "asOf": "2023-12-31",
+      "n": 10,
+      "v1Gate": "not-eligible",
+      "v1Flag": true,
+      "v0Gate": "eligible",
+      "v0Flag": true,
+      "latestNdvi": 0.187,
+      "latestNdmi": -0.259,
+      "drop": 74.967
+    },
+    {
+      "site": {
+        "id": "cleared-10S_060W-1659-15424",
+        "label": "cleared",
+        "lossYear": 2022,
+        "tile": "10S_060W",
+        "region": "Amazon basin (Mato Grosso, Rondonia, Para)",
+        "polygon": [
+          [
+            -13.8595,
+            -59.58525
+          ],
+          [
+            -13.856,
+            -59.58525
+          ],
+          [
+            -13.856,
+            -59.58175
+          ],
+          [
+            -13.8595,
+            -59.58175
+          ]
+        ],
+        "centre": [
+          -13.85775,
+          -59.5835
+        ],
+        "areaHa": 14.7,
+        "treeCover2000": 56
+      },
+      "split": "calibration",
+      "asOf": "2022-12-31",
+      "n": 8,
+      "v1Gate": "not-eligible",
+      "v1Flag": true,
+      "v0Gate": "eligible",
+      "v0Flag": true,
+      "latestNdvi": 0.086,
+      "latestNdmi": -0.241,
+      "drop": 81.539
+    },
+    {
+      "site": {
+        "id": "cleared-10S_060W-2618-12957",
+        "label": "cleared",
+        "lossYear": 2022,
+        "tile": "10S_060W",
+        "region": "Amazon basin (Mato Grosso, Rondonia, Para)",
+        "polygon": [
+          [
+            -13.242750000000001,
+            -59.3455
+          ],
+          [
+            -13.23925,
+            -59.3455
+          ],
+          [
+            -13.23925,
+            -59.342
+          ],
+          [
+            -13.242750000000001,
+            -59.342
+          ]
+        ],
+        "centre": [
+          -13.241,
+          -59.34375
+        ],
+        "areaHa": 14.8,
+        "treeCover2000": 92
+      },
+      "split": "test",
+      "asOf": "2022-12-31",
+      "n": 11,
+      "v1Gate": "not-eligible",
+      "v1Flag": true,
+      "v0Gate": "eligible",
+      "v0Flag": false,
+      "latestNdvi": 0.691,
+      "latestNdmi": 0.061,
+      "drop": 13.517
+    },
+    {
+      "site": {
+        "id": "cleared-10S_060W-378-23900",
+        "label": "cleared",
+        "lossYear": 2022,
+        "tile": "10S_060W",
+        "region": "Amazon basin (Mato Grosso, Rondonia, Para)",
+        "polygon": [
+          [
+            -15.978500000000002,
+            -59.9055
+          ],
+          [
+            -15.975000000000001,
+            -59.9055
+          ],
+          [
+            -15.975000000000001,
+            -59.902
+          ],
+          [
+            -15.978500000000002,
+            -59.902
+          ]
+        ],
+        "centre": [
+          -15.976750000000003,
+          -59.90375
+        ],
+        "areaHa": 14.6,
+        "treeCover2000": 89
+      },
+      "split": "calibration",
+      "asOf": "2022-12-31",
+      "n": 11,
+      "v1Gate": "not-eligible",
+      "v1Flag": true,
+      "v0Gate": "eligible",
+      "v0Flag": false,
+      "latestNdvi": 0.209,
+      "latestNdmi": -0.242,
+      "drop": 74.758
+    },
+    {
+      "site": {
+        "id": "cleared-10S_060W-658-26418",
+        "label": "cleared",
+        "lossYear": 2023,
+        "tile": "10S_060W",
+        "region": "Amazon basin (Mato Grosso, Rondonia, Para)",
+        "polygon": [
+          [
+            -16.608,
+            -59.8355
+          ],
+          [
+            -16.6045,
+            -59.8355
+          ],
+          [
+            -16.6045,
+            -59.832
+          ],
+          [
+            -16.608,
+            -59.832
+          ]
+        ],
+        "centre": [
+          -16.606250000000003,
+          -59.83375
+        ],
+        "areaHa": 14.5,
+        "treeCover2000": 90
+      },
+      "split": "test",
+      "asOf": "2023-12-31",
+      "n": 12,
+      "v1Gate": "not-eligible",
+      "v1Flag": true,
+      "v0Gate": "eligible",
+      "v0Flag": true,
+      "latestNdvi": 0.175,
+      "latestNdmi": -0.252,
+      "drop": 78.852
+    },
+    {
+      "site": {
+        "id": "cleared-10S_060W-413-31812",
+        "label": "cleared",
+        "lossYear": 2022,
+        "tile": "10S_060W",
+        "region": "Amazon basin (Mato Grosso, Rondonia, Para)",
+        "polygon": [
+          [
+            -17.9565,
+            -59.89675
+          ],
+          [
+            -17.953,
+            -59.89675
+          ],
+          [
+            -17.953,
+            -59.893249999999995
+          ],
+          [
+            -17.9565,
+            -59.893249999999995
+          ]
+        ],
+        "centre": [
+          -17.954749999999997,
+          -59.894999999999996
+        ],
+        "areaHa": 14.4,
+        "treeCover2000": 58
+      },
+      "split": "calibration",
+      "asOf": "2022-12-31",
+      "n": 12,
+      "v1Gate": "not-eligible",
+      "v1Flag": true,
+      "v0Gate": "eligible",
+      "v0Flag": false,
+      "latestNdvi": 0.68,
+      "latestNdmi": 0.041,
+      "drop": 18.595
+    },
+    {
+      "site": {
+        "id": "cleared-10S_060W-2814-6771",
+        "label": "cleared",
+        "lossYear": 2022,
+        "tile": "10S_060W",
+        "region": "Amazon basin (Mato Grosso, Rondonia, Para)",
+        "polygon": [
+          [
+            -11.696250000000001,
+            -59.2965
+          ],
+          [
+            -11.69275,
+            -59.2965
+          ],
+          [
+            -11.69275,
+            -59.293
+          ],
+          [
+            -11.696250000000001,
+            -59.293
+          ]
+        ],
+        "centre": [
+          -11.694500000000001,
+          -59.29475
+        ],
+        "areaHa": 14.9,
+        "treeCover2000": 100
+      },
+      "split": "test",
+      "asOf": "2022-12-31",
+      "n": 11,
+      "v1Gate": "not-eligible",
+      "v1Flag": true,
+      "v0Gate": "eligible",
+      "v0Flag": true,
+      "latestNdvi": 0.223,
+      "latestNdmi": -0.275,
+      "drop": 73.515
+    },
+    {
+      "site": {
+        "id": "cleared-10S_060W-1379-38594",
+        "label": "cleared",
+        "lossYear": 2023,
+        "tile": "10S_060W",
+        "region": "Amazon basin (Mato Grosso, Rondonia, Para)",
+        "polygon": [
+          [
+            -19.651999999999997,
+            -59.65525
+          ],
+          [
+            -19.6485,
+            -59.65525
+          ],
+          [
+            -19.6485,
+            -59.65175
+          ],
+          [
+            -19.651999999999997,
+            -59.65175
+          ]
+        ],
+        "centre": [
+          -19.65025,
+          -59.6535
+        ],
+        "areaHa": 14.3,
+        "treeCover2000": 93
+      },
+      "split": "calibration",
+      "asOf": "2023-12-31",
+      "n": 13,
+      "v1Gate": "not-eligible",
+      "v1Flag": true,
+      "v0Gate": "eligible",
+      "v0Flag": true,
+      "latestNdvi": 0.208,
+      "latestNdmi": -0.239,
+      "drop": 74.289
+    },
+    {
+      "site": {
+        "id": "cleared-10S_060W-2177-33833",
+        "label": "cleared",
+        "lossYear": 2023,
+        "tile": "10S_060W",
+        "region": "Amazon basin (Mato Grosso, Rondonia, Para)",
+        "polygon": [
+          [
+            -18.46175,
+            -59.45575
+          ],
+          [
+            -18.45825,
+            -59.45575
+          ],
+          [
+            -18.45825,
+            -59.45225
+          ],
+          [
+            -18.46175,
+            -59.45225
+          ]
+        ],
+        "centre": [
+          -18.46,
+          -59.454
+        ],
+        "areaHa": 14.4,
+        "treeCover2000": 86
+      },
+      "split": "test",
+      "asOf": "2023-12-31",
+      "n": 13,
+      "v1Gate": "not-eligible",
+      "v1Flag": true,
+      "v0Gate": "eligible",
+      "v0Flag": false,
+      "latestNdvi": 0.617,
+      "latestNdmi": -0.015,
+      "drop": 21.601
+    },
+    {
+      "site": {
+        "id": "cleared-10S_060W-574-12720",
+        "label": "cleared",
+        "lossYear": 2022,
+        "tile": "10S_060W",
+        "region": "Amazon basin (Mato Grosso, Rondonia, Para)",
+        "polygon": [
+          [
+            -13.1835,
+            -59.8565
+          ],
+          [
+            -13.18,
+            -59.8565
+          ],
+          [
+            -13.18,
+            -59.852999999999994
+          ],
+          [
+            -13.1835,
+            -59.852999999999994
+          ]
+        ],
+        "centre": [
+          -13.181750000000001,
+          -59.854749999999996
+        ],
+        "areaHa": 14.8,
+        "treeCover2000": 96
+      },
+      "split": "calibration",
+      "asOf": "2022-12-31",
+      "n": 10,
+      "v1Gate": "not-eligible",
+      "v1Flag": true,
+      "v0Gate": "eligible",
+      "v0Flag": false,
+      "latestNdvi": 0.627,
+      "latestNdmi": 0.027,
+      "drop": 19.627
+    },
+    {
+      "site": {
+        "id": "cleared-10S_060W-1379-20282",
+        "label": "cleared",
+        "lossYear": 2022,
+        "tile": "10S_060W",
+        "region": "Amazon basin (Mato Grosso, Rondonia, Para)",
+        "polygon": [
+          [
+            -15.074,
+            -59.65525
+          ],
+          [
+            -15.0705,
+            -59.65525
+          ],
+          [
+            -15.0705,
+            -59.65175
+          ],
+          [
+            -15.074,
+            -59.65175
+          ]
+        ],
+        "centre": [
+          -15.07225,
+          -59.6535
+        ],
+        "areaHa": 14.7,
+        "treeCover2000": 95
+      },
+      "split": "test",
+      "asOf": "2022-12-31",
+      "n": 9,
+      "v1Gate": "eligible",
+      "v1Flag": false,
+      "v0Gate": "eligible",
+      "v0Flag": false,
+      "latestNdvi": 0.87,
+      "latestNdmi": 0.331,
+      "drop": 0
+    },
+    {
+      "site": {
+        "id": "cleared-10S_060W-217-17927",
+        "label": "cleared",
+        "lossYear": 2022,
+        "tile": "10S_060W",
+        "region": "Amazon basin (Mato Grosso, Rondonia, Para)",
+        "polygon": [
+          [
+            -14.48525,
+            -59.94575
+          ],
+          [
+            -14.48175,
+            -59.94575
+          ],
+          [
+            -14.48175,
+            -59.942249999999994
+          ],
+          [
+            -14.48525,
+            -59.942249999999994
+          ]
+        ],
+        "centre": [
+          -14.4835,
+          -59.943999999999996
+        ],
+        "areaHa": 14.7,
+        "treeCover2000": 99
+      },
+      "split": "calibration",
+      "asOf": "2022-12-31",
+      "n": 11,
+      "v1Gate": "not-eligible",
+      "v1Flag": true,
+      "v0Gate": "eligible",
+      "v0Flag": false,
+      "latestNdvi": 0.608,
+      "latestNdmi": 0.032,
+      "drop": 0.328
+    },
+    {
+      "site": {
+        "id": "cleared-10S_060W-2534-9032",
+        "label": "cleared",
+        "lossYear": 2022,
+        "tile": "10S_060W",
+        "region": "Amazon basin (Mato Grosso, Rondonia, Para)",
+        "polygon": [
+          [
+            -12.2615,
+            -59.3665
+          ],
+          [
+            -12.258,
+            -59.3665
+          ],
+          [
+            -12.258,
+            -59.363
+          ],
+          [
+            -12.2615,
+            -59.363
+          ]
+        ],
+        "centre": [
+          -12.25975,
+          -59.36475
+        ],
+        "areaHa": 14.8,
+        "treeCover2000": 100
+      },
+      "split": "test",
+      "asOf": "2022-12-31",
+      "n": 10,
+      "v1Gate": "not-eligible",
+      "v1Flag": true,
+      "v0Gate": "eligible",
+      "v0Flag": false,
+      "latestNdvi": 0.696,
+      "latestNdmi": 0.07,
+      "drop": 12.733
+    }
+  ]
+}

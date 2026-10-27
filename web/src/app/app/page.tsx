@@ -10,6 +10,9 @@ import { Logo, StatusPill, shortAddr } from "@/components/ui";
 import { GuidedDemo } from "@/components/GuidedDemo";
 import { Ledger } from "@/components/Ledger";
 import { ParcelDetail } from "@/components/ParcelDetail";
+import { ImpactPanel } from "@/components/ImpactPanel";
+import { ReplayCard } from "@/components/ReplayCard";
+import { LanguageToggle, useT } from "@/lib/i18n";
 
 const MapView = dynamic(() => import("@/components/MapView"), {
   ssr: false,
@@ -23,6 +26,7 @@ const MapView = dynamic(() => import("@/components/MapView"), {
 type Tab = "register" | "parcels" | "ledger";
 
 export default function AppPage() {
+  const t = useT();
   const { ready, mode, setMode, chainAvailable, account, registry, parcels, events, retirements, run, refresh, lastRejection, toast } = useRegistry();
 
   const [tab, setTab] = useState<Tab>("register");
@@ -31,12 +35,24 @@ export default function AppPage() {
   const [draft, setDraft] = useState<LatLng[]>([]);
   const [name, setName] = useState("");
   const [registering, setRegistering] = useState(false);
+  const [shareOn, setShareOn] = useState(false);
+  const [communityName, setCommunityName] = useState("");
+  const [communityPct, setCommunityPct] = useState("20");
+  const [communityAddr, setCommunityAddr] = useState("");
   const [banner, setBanner] = useState<{ text: string; parcelId: number } | null>(null);
 
   const cells = useMemo(() => polygonToCells(draft), [draft]);
   const areaHa = useMemo(() => cellsAreaHa(cells), [cells]);
   const tooBig = cells.length > MAX_CELLS_PER_PARCEL;
-  const canRegister = draft.length >= 3 && cells.length > 0 && !tooBig && name.trim().length > 0 && !registering;
+  const pctNum = Number(communityPct);
+  const shareValid =
+    !shareOn ||
+    (communityName.trim().length > 0 &&
+      Number.isFinite(pctNum) &&
+      pctNum >= 1 &&
+      pctNum <= 90 &&
+      (mode === "sim" || /^0x[0-9a-fA-F]{40}$/.test(communityAddr)));
+  const canRegister = draft.length >= 3 && cells.length > 0 && !tooBig && name.trim().length > 0 && !registering && shareValid;
 
   const selected = parcels.find((p) => p.id === selectedId) ?? null;
   const mine = useMemo(() => parcels.filter((p) => p.owner === account), [parcels, account]);
@@ -56,18 +72,23 @@ export default function AppPage() {
 
   const addPoint = useCallback((p: LatLng) => setDraft((d) => [...d, p]), []);
 
-  const register = async (poly: LatLng[], parcelName: string, polyCells: bigint[]) => {
+  const register = async (poly: LatLng[], parcelName: string, polyCells: bigint[], withShare = false) => {
     setRegistering(true);
     try {
-      const parcel = await run((r) => r.register(parcelName, poly, polyCells));
+      const community =
+        withShare && shareOn
+          ? { name: communityName.trim(), address: communityAddr.trim() || undefined, bps: Math.round(pctNum * 100) }
+          : undefined;
+      const parcel = await run((r) => r.register(parcelName, poly, polyCells, community));
       if (parcel) {
         toast({
           kind: "success",
           title: `Parcel #${parcel.id} registered`,
-          detail: `${polyCells.length} cells are now exclusively yours. Next: verify it with the satellite.`,
+          detail: `${polyCells.length} cells are now exclusively yours${community ? `; ${pctNum}% of every issuance is reserved for ${community.name}` : ""}. Next: verify it with the satellite.`,
         });
         setDraft([]);
         setName("");
+        setShareOn(false);
         setDrawing(false);
         select(parcel.id);
       }
@@ -100,12 +121,13 @@ export default function AppPage() {
         <div className="flex items-center gap-4">
           <Logo size={26} />
           <span className="hidden h-5 w-px bg-ink/30 sm:block" />
-          <span className="label hidden sm:block">Registry</span>
+          <span className="label hidden sm:block">{t("Registry")}</span>
         </div>
         <div className="flex items-center gap-2">
+          <LanguageToggle />
           <div className="flex rounded-[6px] border-[1.5px] border-ink bg-surface p-0.5 text-xs font-semibold" role="group" aria-label="Mode">
             <button onClick={() => setMode("sim")} className={`whitespace-nowrap rounded-[4px] px-2.5 py-1.5 transition sm:px-3 ${mode === "sim" ? "bg-ink text-bg" : "text-mute hover:text-ink"}`}>
-              Simulation
+              {t("Simulation")}
             </button>
             <button
               onClick={() => chainAvailable && setMode("chain")}
@@ -113,7 +135,7 @@ export default function AppPage() {
               title={chainAvailable ? "Use the deployed smart contract" : "Contract not deployed in this build"}
               className={`whitespace-nowrap rounded-[4px] px-2.5 py-1.5 transition sm:px-3 ${mode === "chain" ? "bg-ink text-bg" : "text-mute hover:text-ink"} disabled:cursor-not-allowed disabled:opacity-50`}
             >
-              On-chain
+              {t("On-chain")}
             </button>
           </div>
           {account && (
@@ -133,7 +155,7 @@ export default function AppPage() {
               }}
               title="Restore the initial demo data"
             >
-              <RotateCcw className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Reset</span>
+              <RotateCcw className="h-3.5 w-3.5" /> <span className="hidden sm:inline">{t("Reset")}</span>
             </button>
           )}
         </div>
@@ -162,16 +184,16 @@ export default function AppPage() {
 
           {drawing && (
             <div className="pointer-events-none absolute left-1/2 top-4 z-[1000] -translate-x-1/2 animate-rise whitespace-nowrap rounded-[4px] border-[1.5px] border-ink bg-lime px-4 py-2 text-sm font-semibold text-ink shadow-hard-sm">
-              <MousePointer2 className="mr-1.5 inline h-4 w-4" /> Click the map to place corners
+              <MousePointer2 className="mr-1.5 inline h-4 w-4" /> {t("Click the map to place corners")}
             </div>
           )}
 
           {banner && (
             <div className="card-hard pointer-events-none absolute inset-x-3 top-4 z-[1200] mx-auto max-w-md animate-shake !border-danger p-4 !shadow-[5px_5px_0_rgb(var(--danger))]">
               <div className="flex items-start gap-3">
-                <span className="stamp stamp-danger mt-1">Rejected</span>
+                <span className="stamp stamp-danger mt-1">{t("Rejected")}</span>
                 <div>
-                  <p className="font-display text-[26px] leading-none text-danger">Double counting blocked</p>
+                  <p className="font-display text-[26px] leading-none text-danger">{t("Double counting blocked")}</p>
                   <p className="mt-1.5 text-[13px] leading-snug text-ink/75">
                     {banner.text}. The registry refused the transaction: a cell can never be claimed twice.
                   </p>
@@ -192,9 +214,9 @@ export default function AppPage() {
           <nav className="grid shrink-0 grid-cols-3 gap-1.5 border-b-[1.5px] border-ink bg-raised p-2" role="tablist">
             {(
               [
-                ["register", "Register", PenLine],
-                ["parcels", `Parcels · ${parcels.length}`, Layers3],
-                ["ledger", "Ledger", ListTree],
+                ["register", t("Register"), PenLine],
+                ["parcels", `${t("Parcels")} · ${parcels.length}`, Layers3],
+                ["ledger", t("Ledger"), ListTree],
               ] as const
             ).map(([id, label, Icon]) => (
               <button
@@ -213,34 +235,35 @@ export default function AppPage() {
 
           <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-3">
             <GuidedDemo parcels={parcels} events={events} retirements={retirements} account={account} />
+            <ImpactPanel parcels={parcels} events={events} retirements={retirements} />
 
             {tab === "register" && (
               <div className="card animate-rise space-y-4 p-4">
                 <div>
-                  <p className="font-display text-[28px] leading-none">Register a parcel</p>
+                  <p className="font-display text-[28px] leading-none">{t("Register a parcel")}</p>
                   <p className="mt-0.5 text-[13px] leading-snug text-mute">
-                    Outline your land. It is split into ~38 × 19 m cells; the contract refuses any cell that is already taken.
+                    {t("Outline your land. It is split into ~38 × 19 m cells; the contract refuses any cell that is already taken.")}
                   </p>
                 </div>
 
-                <input className="input" placeholder="Parcel name (e.g. Cajou Adjigo)" value={name} onChange={(e) => setName(e.target.value)} aria-label="Parcel name" />
+                <input className="input" placeholder={t("Parcel name (e.g. Cajou Adjigo)")} value={name} onChange={(e) => setName(e.target.value)} aria-label="Parcel name" />
 
                 <div className="grid grid-cols-3 gap-2">
                   <button className={`btn btn-sm ${drawing ? "btn-primary" : "btn-ghost"}`} onClick={() => setDrawing((d) => !d)}>
-                    <Hexagon className="h-4 w-4" /> {drawing ? "Drawing…" : "Draw"}
+                    <Hexagon className="h-4 w-4" /> {drawing ? t("Drawing…") : t("Draw")}
                   </button>
                   <button className="btn btn-ghost btn-sm" disabled={draft.length === 0} onClick={() => setDraft((d) => d.slice(0, -1))}>
-                    <Undo2 className="h-4 w-4" /> Undo
+                    <Undo2 className="h-4 w-4" /> {t("Undo")}
                   </button>
                   <button className="btn btn-ghost btn-sm" disabled={draft.length === 0} onClick={() => (setDraft([]), setDrawing(false))}>
-                    <Eraser className="h-4 w-4" /> Clear
+                    <Eraser className="h-4 w-4" /> {t("Clear")}
                   </button>
                 </div>
 
                 <dl className="grid grid-cols-3 gap-2 text-center">
                   <div className="rounded-[6px] border border-ink/20 bg-surface py-2">
                     <dd className="font-display text-lg font-semibold">{draft.length}</dd>
-                    <dt className="text-[10px] uppercase tracking-wider text-mute">Corners</dt>
+                    <dt className="text-[10px] uppercase tracking-wider text-mute">{t("Corners")}</dt>
                   </div>
                   <div className="rounded-[6px] border border-ink/20 bg-surface py-2">
                     <dd className={`font-display text-lg font-semibold ${tooBig ? "text-danger" : ""}`}>{cells.length}</dd>
@@ -248,28 +271,54 @@ export default function AppPage() {
                   </div>
                   <div className="rounded-[6px] border border-ink/20 bg-surface py-2">
                     <dd className="font-display text-lg font-semibold">{areaHa.toFixed(1)}</dd>
-                    <dt className="text-[10px] uppercase tracking-wider text-mute">Hectares</dt>
+                    <dt className="text-[10px] uppercase tracking-wider text-mute">{t("Hectares")}</dt>
                   </div>
                 </dl>
                 {tooBig && <p className="text-xs text-danger">This polygon covers more than {MAX_CELLS_PER_PARCEL} cells (~{Math.round(MAX_CELLS_PER_PARCEL * 0.073)} ha). Draw a smaller parcel.</p>}
 
-                <button className="btn btn-primary w-full" disabled={!canRegister} onClick={() => register(draft, name.trim(), cells)}>
+                <div className="rounded-[6px] border border-ink/20 bg-surface p-3">
+                  <label className="flex cursor-pointer items-start gap-2.5 text-[13px] leading-snug">
+                    <input type="checkbox" className="mt-0.5 h-4 w-4" checked={shareOn} onChange={(e) => setShareOn(e.target.checked)} />
+                    <span>
+                      <b>{t("Reserve a share for the community")}</b>
+                      <span className="block text-xs text-mute">
+                        {t("A village fund or cooperative receives this share of every issuance. It is written into the contract and cannot be changed later.")}
+                      </span>
+                    </span>
+                  </label>
+                  {shareOn && (
+                    <div className="mt-3 grid grid-cols-[1fr_84px] gap-2">
+                      <input className="input" placeholder="Community (e.g. Ouidah village fund)" value={communityName} onChange={(e) => setCommunityName(e.target.value)} aria-label="Community name" />
+                      <div className="relative">
+                        <input className="input pr-7" inputMode="numeric" value={communityPct} onChange={(e) => setCommunityPct(e.target.value)} aria-label="Community share in percent" />
+                        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-mute">%</span>
+                      </div>
+                      {mode === "chain" && (
+                        <input className="input col-span-2 font-mono text-xs" placeholder="Community wallet 0x…" value={communityAddr} onChange={(e) => setCommunityAddr(e.target.value)} aria-label="Community wallet address" />
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <button className="btn btn-primary w-full" disabled={!canRegister} onClick={() => register(draft, name.trim(), cells, true)}>
                   {registering ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin" /> Writing to the ledger…
+                      <Loader2 className="h-4 w-4 animate-spin" /> {t("Writing to the ledger…")}
                     </>
                   ) : (
-                    "Register on the ledger"
+                    t("Register on the ledger")
                   )}
                 </button>
 
                 <div className="relative">
                   <div className="absolute inset-x-0 top-1/2 h-px bg-ink/20" />
-                  <p className="relative mx-auto w-fit bg-surface px-3 text-[11px] uppercase tracking-widest text-mute">or test the guard rail</p>
+                  <p className="relative mx-auto w-fit bg-surface px-3 text-[11px] uppercase tracking-widest text-mute">{t("or test the guard rail")}</p>
                 </div>
                 <button className="btn btn-danger w-full" disabled={registering || parcels.length === 0} onClick={tryDoubleCount}>
-                  <ShieldX className="h-4 w-4" /> Claim land that's already registered
+                  <ShieldX className="h-4 w-4" /> {t("Claim land that's already registered")}
                 </button>
+
+                {mode === "sim" && <ReplayCard onDone={(id) => select(id)} />}
               </div>
             )}
 
@@ -314,7 +363,7 @@ export default function AppPage() {
 
             {tab === "ledger" && (
               <div className="card animate-rise p-4">
-                <p className="mb-3 font-display text-[28px] leading-none">Public ledger</p>
+                <p className="mb-3 font-display text-[28px] leading-none">{t("Ledger")}</p>
                 <Ledger events={events} />
               </div>
             )}

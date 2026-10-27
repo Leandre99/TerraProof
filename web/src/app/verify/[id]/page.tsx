@@ -7,9 +7,11 @@ import { useEffect, useMemo, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { ArrowLeft, Copy, Loader2, Satellite, SearchX } from "lucide-react";
 import { useRegistry } from "@/lib/registry/context";
+import { LanguageToggle, useT } from "@/lib/i18n";
 import { Logo, shortAddr, shortHash } from "@/components/ui";
 import { NdviChart } from "@/components/NdviChart";
 import { Ledger } from "@/components/Ledger";
+import { RecomputeBox } from "@/components/RecomputeBox";
 
 const MapView = dynamic(() => import("@/components/MapView"), {
   ssr: false,
@@ -17,6 +19,7 @@ const MapView = dynamic(() => import("@/components/MapView"), {
 });
 
 export default function ProofPage() {
+  const t = useT();
   const params = useParams<{ id: string }>();
   const id = Number(params.id);
   const { ready, parcels, events, retirements, mode, setMode, chainAvailable, toast } = useRegistry();
@@ -44,9 +47,12 @@ export default function ProofPage() {
     <div className="min-h-screen">
       <header className="mx-auto flex max-w-5xl items-center justify-between px-5 py-5">
         <Logo />
-        <Link href="/app" className="btn btn-ghost btn-sm">
-          <ArrowLeft className="h-4 w-4" /> Back to registry
-        </Link>
+        <div className="flex items-center gap-2">
+          <LanguageToggle />
+          <Link href="/app" className="btn btn-ghost btn-sm">
+            <ArrowLeft className="h-4 w-4" /> {t("Registry")}
+          </Link>
+        </div>
       </header>
 
       <main className="mx-auto max-w-5xl px-5 pb-24">
@@ -109,6 +115,13 @@ export default function ProofPage() {
               ))}
             </dl>
 
+            {parcel.community && (
+              <p className="border-b-[1.5px] border-ink bg-brand/5 px-6 py-3 text-sm sm:px-10">
+                <b>{(parcel.community.bps / 100).toFixed(parcel.community.bps % 100 ? 1 : 0)}% of every issuance is reserved for {parcel.community.name}</b>: this share is
+                enforced by the contract (currently {parcel.community.holdings} credits held by the community).
+              </p>
+            )}
+
             {/* Map + QR */}
             <div className="grid border-b-[1.5px] border-ink lg:grid-cols-[1.5fr_1fr]">
               <div className="h-[340px] border-b-[1.5px] border-ink lg:border-b-0 lg:border-r-[1.5px]">
@@ -119,11 +132,11 @@ export default function ProofPage() {
                   {url ? <QRCodeSVG value={url} size={132} fgColor="#16140F" /> : <div className="h-[132px] w-[132px]" />}
                 </div>
                 <div>
-                  <p className="font-display text-2xl">Check it yourself</p>
-                  <p className="mt-1 text-sm leading-snug text-mute">Scan to open this proof and verify the evidence.</p>
+                  <p className="font-display text-2xl">{t("Check it yourself")}</p>
+                  <p className="mt-1 text-sm leading-snug text-mute">{t("Scan to open this proof and verify the evidence.")}</p>
                 </div>
                 <button className="btn btn-ghost btn-sm" onClick={() => navigator.clipboard?.writeText(url).then(() => toast({ kind: "success", title: "Link copied" }))}>
-                  <Copy className="h-3.5 w-3.5" /> Copy link
+                  <Copy className="h-3.5 w-3.5" /> {t("Copy link")}
                 </button>
               </div>
             </div>
@@ -132,7 +145,7 @@ export default function ProofPage() {
             <div className="grid border-b-[1.5px] border-ink lg:grid-cols-2 lg:divide-x-[1.5px] lg:divide-ink">
               <section className="p-6 sm:p-8">
                 <div className="flex items-center justify-between gap-3">
-                  <h2 className="font-display text-3xl">Satellite evidence</h2>
+                  <h2 className="font-display text-3xl">{t("Satellite evidence")}</h2>
                   {r && (
                     <span className={`pill ${r.source === "sentinel-2" ? "pill-brand" : "pill-mute"}`}>
                       <Satellite className="h-3 w-3" /> {r.source === "sentinel-2" ? "Sentinel-2" : "Cached sample"}
@@ -145,24 +158,46 @@ export default function ProofPage() {
                 {r ? (
                   <dl className="mt-4 space-y-2 text-sm">
                     <div className="flex justify-between gap-4 border-b border-dashed border-ink/25 pb-2">
-                      <dt className="label">Median NDVI</dt>
+                      <dt className="label">Mean NDVI · greenness</dt>
                       <dd className="font-mono">{r.ndviMean.toFixed(2)}</dd>
                     </div>
+                    {r.ndmiMean !== undefined && (
+                      <div className="flex justify-between gap-4 border-b border-dashed border-ink/25 pb-2">
+                        <dt className="label">Mean NDMI · canopy moisture</dt>
+                        <dd className="font-mono">{r.ndmiMean.toFixed(2)}</dd>
+                      </div>
+                    )}
+                    {r.verdict && (
+                      <div className="flex justify-between gap-4 border-b border-dashed border-ink/25 pb-2">
+                        <dt className="label">Eligibility</dt>
+                        <dd className="font-mono">{r.verdict}</dd>
+                      </div>
+                    )}
+                    {r.asOf && (
+                      <div className="flex justify-between gap-4 border-b border-dashed border-ink/25 pb-2">
+                        <dt className="label">Analysis date</dt>
+                        <dd className="font-mono">{r.asOf}</dd>
+                      </div>
+                    )}
                     <div className="flex justify-between gap-4 border-b border-dashed border-ink/25 pb-2">
                       <dt className="label">Report hash</dt>
                       <dd className="font-mono text-xs" title={r.hash}>
                         {shortHash(r.hash)}
                       </dd>
                     </div>
+                    {r.reasons?.map((x, i) => (
+                      <p key={i} className="pt-1 text-xs leading-relaxed text-ink/80">{x}</p>
+                    ))}
                     <p className="pt-1 text-xs leading-relaxed text-mute">{r.methodology}</p>
                   </dl>
                 ) : (
                   <p className="mt-4 text-sm text-mute">This parcel has not been analysed yet.</p>
                 )}
+                <RecomputeBox parcel={parcel} />
               </section>
 
               <section className="p-6 sm:p-8">
-                <h2 className="font-display text-3xl">Retirements</h2>
+                <h2 className="font-display text-3xl">{t("Retirements")}</h2>
                 {parcelRetirements.length === 0 ? (
                   <p className="mt-4 text-sm text-mute">No credits from this parcel have been retired yet.</p>
                 ) : (
@@ -188,7 +223,7 @@ export default function ProofPage() {
             </div>
 
             <section className="p-6 sm:p-8">
-              <h2 className="mb-4 font-display text-3xl">Full history</h2>
+              <h2 className="mb-4 font-display text-3xl">{t("Full history")}</h2>
               <Ledger events={parcelEvents} limit={50} />
             </section>
           </article>

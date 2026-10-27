@@ -17,6 +17,19 @@ async function main() {
   const registry = await Factory.deploy(deployer.address, verifier, MAX_CREDITS_PER_CELL);
   await registry.waitForDeployment();
 
+  // Optional independent verifiers + quorum, e.g. EXTRA_VERIFIERS=0xAAA,0xBBB THRESHOLD=2
+  // Issuing, revoking and unfreezing then need THRESHOLD distinct verifiers; any single one can still freeze.
+  const extra = (process.env.EXTRA_VERIFIERS || "").split(",").map((x) => x.trim()).filter(Boolean);
+  for (const v of extra) {
+    await (await registry.grantRole(await registry.VERIFIER_ROLE(), v)).wait();
+    console.log(`Granted VERIFIER_ROLE to ${v}`);
+  }
+  const threshold = Number(process.env.THRESHOLD || 1);
+  if (threshold > 1) {
+    await (await registry.setThreshold(threshold)).wait();
+    console.log(`Quorum set to ${threshold} verifiers`);
+  }
+
   const address = await registry.getAddress();
   const chainId = Number((await hre.ethers.provider.getNetwork()).chainId);
   console.log(`TerraProof deployed to ${address} (chain ${chainId})`);
